@@ -1,0 +1,3 @@
+Layer Pairs Export File for PCB: C:\Users\anhhu\Documents\ALTIUM\Van Anh\2025_May_04 Readtime Sensor Tho zalo\Read Time sensor Tho AMT\Read Time sensor Tho AMT.PcbDoc
+LayersSetName=Top_Bot_Thru_Holes|DrillFile=read time sensor tho amt-roundholes.txt|DrillLayers=gtl,gbl
+LayersSetName=Top_Bot_Slot_Holes|DrillFile=read time sensor tho amt-slotholes.txt|DrillLayers=gtl,gbl

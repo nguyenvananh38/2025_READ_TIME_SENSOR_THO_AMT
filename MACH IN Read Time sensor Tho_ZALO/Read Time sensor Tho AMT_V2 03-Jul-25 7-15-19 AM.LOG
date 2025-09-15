@@ -1,0 +1,48 @@
+Removed Pin From Net: NetName=GND Pin=BT1-2
+Removed Pin From Net: NetName=GND Pin=EDG 2-2
+Removed Pin From Net: NetName=GND Pin=EDG 3-1
+Removed Pin From Net: NetName=COM Pin=EDG 3-2
+Removed Pin From Net: NetName=+24V Pin=JACK DC1-1
+Removed Pin From Net: NetName=COM Pin=P1-1
+Removed Pin From Net: NetName=+24V Pin=P3-2
+Removed Pin From Net: NetName=+5 Pin=P4-2
+Removed Pin From Net: NetName=-B Pin=R1-1
+Removed Pin From Net: NetName=GND Pin=R1-2
+Removed Pin From Net: NetName=+5 Pin=R3-1
+Removed Pin From Net: NetName=+A Pin=R3-2
+Removed Pin From Net: NetName=GND Pin=RESET-1
+Removed Pin From Net: NetName=RESET Pin=RESET-2
+Removed Pin From Net: NetName=COM Pin=U3-2
+Removed Pin From Net: NetName=COM Pin=U5-2
+Removed Member From Class: ClassName=Read Time sensor Tho AMT Member=BT1
+Removed Member From Class: ClassName=Read Time sensor Tho AMT Member=EDG 2
+Removed Member From Class: ClassName=Read Time sensor Tho AMT Member=EDG 3
+Removed Member From Class: ClassName=Read Time sensor Tho AMT Member=R1
+Removed Member From Class: ClassName=Read Time sensor Tho AMT Member=R3
+Removed Member From Class: ClassName=Read Time sensor Tho AMT Member=RESET
+Change Component Designator: OldDesignator=P1 NewDesignator=P3
+Change Component Designator: OldDesignator=P2 NewDesignator=P4
+Added Component: Designator=BT?(DE PIN CR1220)
+Add component (AddParameter): Name = "Ma_Hang"; Value = "MH000833"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Ten"; Value = "Ð? PIN CR1220 SMD"; VariantName = "[No Variations]"
+Added Component: Designator=P1(SMT-0805-RES)
+Added Component: Designator=P2(SMT-0805-RES)
+Added Pin To Net: NetName=GND Pin=BT?-2
+Added Pin To Net: NetName=+24V Pin=P1-2
+Added Pin To Net: NetName=+5 Pin=P2-2
+Change Net Name : Old Net Name=COM New Net Name=COM2
+Added Pin To Net: NetName=COM1 Pin=P3-1
+Added Pin To Net: NetName=COM1 Pin=U3-2
+Added Pin To Net: NetName=COM1 Pin=U5-2
+Added Net: Name=COM1
+Added Pin To Net: NetName=NetBT?_1 Pin=BT?-1
+Added Pin To Net: NetName=NetBT?_1 Pin=U4-6
+Added Net: Name=NetBT?_1
+Added Pin To Net: NetName=NetJACK DC1_1 Pin=JACK DC1-1
+Added Pin To Net: NetName=NetJACK DC1_1 Pin=P1-1
+Added Pin To Net: NetName=NetJACK DC1_1 Pin=P2-1
+Added Net: Name=NetJACK DC1_1
+Change Class Name : Old Net Name=Read Time sensor Tho AMT New Net Name=Read Time sensor Tho AMT_V2.0
+Added Member To Class: ClassName=Read Time sensor Tho AMT_V2.0 Member=Component BT? CR1220 SMD
+Added Member To Class: ClassName=Read Time sensor Tho AMT_V2.0 Member=Component C10 104
+Added Room: Name=Read Time sensor Tho AMT_V2.0

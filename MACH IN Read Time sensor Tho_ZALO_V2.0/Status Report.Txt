@@ -1,0 +1,13 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [Read Time sensor Tho AMT.PrjPcb]
+   Generated File[Read Time sensor Tho AMT_V2.0-RoundHoles.TXT]
+   Generated File[Read Time sensor Tho AMT_V2.0-SlotHoles.TXT]
+   Generated File[Read Time sensor Tho AMT_V2.0.LDP]
+   Generated File[Read Time sensor Tho AMT_V2.0.DRR]
+
+
+Files Generated   : 4
+Documents Printed : 0
+
+Finished Output Generation At 11:23:05 AM On 03-Jul-25
