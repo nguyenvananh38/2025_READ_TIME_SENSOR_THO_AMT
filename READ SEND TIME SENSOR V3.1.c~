@@ -1,0 +1,877 @@
+/*******************************************************
+This program was created by the
+CodeWizardAVR V3.12 Advanced
+Automatic Program Generator
+© Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
+http://www.hpinfotech.com
+
+Project : READ SEND TIME SENSOR
+Version : V3.1. chinh  tiep tu v3.0, chinh 5s->2s, 1 INput cho senssor out  , IN2 1->0: lieu vao    IN2  0->1: lieu ra
+Date    : 15-Jul-2025
+Author  : Nguyen Van Anh
+Company : VART
+Comments: PHAN CUNG V2.0. FIX CHAN PIN DE TRANH TRUONG HOP COPY
+update: 
+    time 2 may responte ko bi trung nhau
+    time out bi mat du lieu
+    1 pack data là thoi gian vào, thoi gian ra, thoi gian luu hóa (vào - ra), thoi gian thao tác (ra - vào lan truoc dó neu k có thì = 0). 
+    cho pack data này co dinh luôn cho den khi có out moi thì moi thay doi 1 lan 4 cái  
+    update luu addr vao epprom  
+    
+file modbus config tren modbus poll: C:\Users\anhhu\Documents\modbus Poll
+
+
+Chip type               : ATmega328P
+Program type            : Application
+AVR Core Clock frequency: 11.059200 MHz
+Memory model            : Small
+External RAM size       : 0
+Data Stack size         : 512
+
+1. modbus RTU, baud mac dinh 9600.
+2. dia chi slave hoac ghi all: 0x?? hoac 0x00
+3. thanh ghi modbus bat dau ghi realtime va dia chi slave la thanh ghi so 10(0x0A):  
+    vd: Tx:00 10 00 0A 00 0A 14 00 01 00 0F 00 1B 00 1E 00 19 00 05 00 19 00 00 00 00 00 00 66 2B
+
+    trong do:   0x00: addr de ghi all slave
+                0x10: funtion code 0x10 :16 write multiple register
+                0x00 (MSB) 0x0A(LSB): thanh ghi bat dau ghi      (thanh ghi so 10)
+                0x00 (MSB) 0x0A(LSB): so luong thanh ghi duoc dung (10 thanh ghi duoc dung)
+                0x14: so byte data (20 byte data do dung 10 thanh ghi 2byte - 1 word)
+                0x00 0x01: set addr cho slave là 0x01  
+                00 0F: 15 gio
+                00 1B: 27 phut
+                00 1E: 30 giay
+                0x00 0x19: ngay 25  
+                0x00 0x05: thang 5
+                0x00 0x19: nam 25
+                0x00 0x00: du phong
+                0x00 0x00: du phong
+                0x00 0x00: du phong
+                0x66 0x2B: CRC-16 modbus     
+                
+4. thanh ghi modbus bat dau doc du lieu may 1 la thanh ghi so 21(0x15): 
+    vd: Tx:01 03 00 15 00 14 54 01         (may tinh gui xuong slave)
+    trong dó:   0x01: addr slave 
+                0x03: function code read
+                0x00 (MSB) 0x15(LSB): thanh ghi bat dau doc là thanh ghi so 21
+                0x00 (MSB) 0x14(LSB): tong co 20 word data can doc (40 byte)
+                0x54 (MSB) 0x01(LSB): CRC-16 modbus  
+        Rx:01 03 00 28 data... CRC          (salve phan hoi)
+                
+
+5. thanh ghi modbus bat dau doc du lieu may 2 la thanh ghi so 41(0x29): 
+    vd: Tx:01 03 00 29 00 14 94 0D  
+    trong dó:   0x01: addr slave 
+                0x03: function code read
+                0x00 (MSB) 0x29(LSB): thanh ghi bat dau doc là thanh ghi so 41
+                0x00 (MSB) 0x14(LSB): tong co 20 byte data can doc
+                0x94 (MSB) 0x0D(LSB): CRC-16 modbus 
+       Rx:01 03 00 3d data... CRC          (salve phan hoi)  
+
+
+
+
+*******************************************************/
+
+#include <mega328p.h>
+#include <InitV20.h>
+#include <delay.h>
+#include <string.h>
+#include <stdlib.h>
+#include <i2c.h>
+#include <stdio.h>
+
+#define IN1 PIND.3
+#define IN2 PIND.4
+#define IN3 PIND.5
+#define IN4 PINB.0
+#define SQW PINC.2
+
+#define DE PORTD.2    //EN RS485
+#define RST_RTC PORTC.3
+
+#define ON      1
+#define OFF     0
+
+#define MAY1    1
+#define MAY2    2
+
+#define addr_baudrate        0x011
+#define addr_diaChiSlave     0x012
+
+#define timeSet   20    //20x100ms  //sau timeSetOn ms thì tính là có tin hieu
+
+unsigned char mode_baudrate;
+unsigned char diaChiSlave;
+unsigned char buff_rx[50] = {0};
+unsigned char buff_tx[50] = {0};
+unsigned char length_rx = 0;
+unsigned char function_code = 0;
+unsigned char address_register1 = 0, number_register1 = 0, number_byte1 = 0, number_status1 = 0; //writre dung 0x10 :16 write multiple register 
+unsigned int CRC16 = 0; 
+unsigned char F_rx = 0;
+unsigned char timeSetOn1 = 0;
+unsigned char timeSetOn2 = 0;
+
+bit chuTrinhMay1 = 0;   //kiem tra tinh xac thuc cua 1 chu trinh vao phai co ra, va muon ra phai co vao
+bit chuTrinhMay2 = 0;   //kiem tra tinh xac thuc cua 1 chu trinh vao phai co ra, va muon ra phai co vao
+
+typedef struct {
+    unsigned char second;
+    unsigned char minute;
+    unsigned char hour;
+    unsigned char day;     // 1-7 (DS3231 luu th? trong tu?n)
+    unsigned char date;    // Ngày (1-31)
+    unsigned char month;   // Tháng (1-12)
+    unsigned char year;    // Nam (00-99)
+} RTC_Time;
+
+RTC_Time current;
+RTC_Time realTimeIn1;       //thoi diem lieu vao khuon may 1
+RTC_Time realTimeOut1;      //thoi diem lieu ra khuon may 1
+RTC_Time realTimeOut1_QK;      //thoi diem lieu ra CHU TRINH TRUOC khuon may 1
+RTC_Time realTimeIn2;       //thoi diem lieu vao khuon may 2
+RTC_Time realTimeOut2;      //thoi diem lieu ra khuon may 2
+RTC_Time realTimeOut2_QK;      //thoi diem lieu ra CHU TRINH TRUOC khuon may 2
+RTC_Time timeLuuHoa1;       //thoi gian luu hoa (tu luc vao den luc ra) máy 1
+RTC_Time timeLuuHoa2;       //thoi gian luu hoa (tu luc vao den luc ra) máy 2
+RTC_Time timeThaoTac1;      //thoi gian thao tac (tu luc ra lan truoc den vao lan sau) máy 1
+RTC_Time timeThaoTac2;      //thoi gian thao tac (tu luc ra lan truoc den vao lan sau) máy 2
+
+RTC_Time realTimeInX1;
+RTC_Time realTimeOutX1;
+RTC_Time timeLuuHoaX1;
+RTC_Time timeThaoTacX1;
+
+RTC_Time realTimeInX2;
+RTC_Time realTimeOutX2;
+RTC_Time timeLuuHoaX2;
+RTC_Time timeThaoTacX2;
+
+// Ghi thoi gian mac dinh khi nap code: 
+RTC_Time set_time = {0, 28, 01, 2, 21, 5, 25};  // giây, phút, gio, thu, ngày, tháng, nam
+
+unsigned char bcd_to_dec(unsigned char val) {
+    return ((val >> 4) * 10 + (val & 0x0F));
+}
+
+unsigned char dec_to_bcd(unsigned char val) {
+    return ((val / 10) << 4) | (val % 10);
+}
+
+void set_ds3231_datetime(RTC_Time *t) {
+    i2c_start();
+    i2c_write(0xD0);  // DS3231 I2C address + Write
+    i2c_write(0x00);  // Start at register 0 (seconds)
+
+    i2c_write(dec_to_bcd(t->second));
+    i2c_write(dec_to_bcd(t->minute));
+    i2c_write(dec_to_bcd(t->hour));
+    i2c_write(dec_to_bcd(t->day));
+    i2c_write(dec_to_bcd(t->date));
+    i2c_write(dec_to_bcd(t->month));
+    i2c_write(dec_to_bcd(t->year));
+
+    i2c_stop();
+}
+
+void read_ds3231_datetime(RTC_Time *t) {
+    i2c_start();
+    i2c_write(0xD0);  // DS3231 I2C address + Write
+    i2c_write(0x00);  // Start at register 0 (seconds)
+    i2c_start();
+    i2c_write(0xD1);  // DS3231 I2C address + Read
+
+    t->second = bcd_to_dec(i2c_read(1));
+    t->minute = bcd_to_dec(i2c_read(1));
+    t->hour   = bcd_to_dec(i2c_read(1));
+    t->day    = bcd_to_dec(i2c_read(1));
+    t->date   = bcd_to_dec(i2c_read(1));
+    t->month  = bcd_to_dec(i2c_read(1) & 0x1F);  // Mask century bit
+    t->year   = bcd_to_dec(i2c_read(0));
+
+    i2c_stop();
+}
+
+
+// Timer 0 overflow interrupt service routine
+interrupt [TIM0_OVF] void timer0_ovf_isr(void)      //1ms
+{
+// Reinitialize Timer 0 value
+TCNT0=0x53;
+// Place your code here
+
+}
+
+// Timer1 overflow interrupt service routine
+interrupt [TIM1_OVF] void timer1_ovf_isr(void)      //100ms
+{
+// Reinitialize Timer1 value
+TCNT1H=0xBC80 >> 8;
+TCNT1L=0xBC80 & 0xff;
+// Place your code here
+    length_rx = 0;
+    
+//    if (((IN1 == OFF && chuTrinhMay1 == OFF) || (IN2 == OFF && chuTrinhMay1 == ON)) && timeSetOn1 > 0)
+//        timeSetOn1 --;    
+//        
+//    if (((IN3 == OFF && chuTrinhMay2 == OFF) || (IN4 == OFF && chuTrinhMay2 == ON)) && timeSetOn2 > 0)
+//        timeSetOn2 --; 
+
+    if (((IN2 == OFF && chuTrinhMay1 == OFF) || (IN2 == ON && chuTrinhMay1 == ON)) && timeSetOn1 > 0)
+        timeSetOn1 --;    
+        
+    if (((IN4 == ON && chuTrinhMay2 == OFF) || (IN4 == OFF && chuTrinhMay2 == ON)) && timeSetOn2 > 0)
+        timeSetOn2 --; 
+        
+}
+
+// Timer2 overflow interrupt service routine
+interrupt [TIM2_OVF] void timer2_ovf_isr(void)      //0.5ms
+{
+// Reinitialize Timer2 value
+TCNT2=0x53;
+// Place your code here
+
+}
+//=================================================================================
+
+
+//TRUYEN DATA RA NGOAI ==================================================================================
+void send1(unsigned char udata){//Ham gui 1 ky tu ASCII
+    while(!(UCSR0A & (1<<UDRE0)));//Kiem tra co UDRE    //while(UCSRA.5 != 1);
+    UDR0=udata;//Send 1 byte
+}
+
+void send(unsigned char *s){//Ham gui chuoi ki tu qua UART  ==================================================================================
+     unsigned char n,i;
+     DE = 1;
+     delay_ms(5); 
+     n=strlen(s); //Dem xem co bao nhieu ky tu
+     for(i=0;i<n;i++)//Vong lap gui tung ky tu 1
+     {      
+        send1(s[i]);
+     } 
+     delay_ms(10);  
+     DE = 0;
+}
+
+unsigned int CRC_Check(unsigned char *Buf_Crc, unsigned char Length)
+{
+    unsigned int Crc_Temp = 0xFFFF;
+    unsigned char Crc0_Index, Crc1_Index;
+    for (Crc0_Index = 0; Crc0_Index < Length; Crc0_Index++)
+    {
+        Crc_Temp = Crc_Temp ^ *Buf_Crc;          // XOR byte into least sig. byte of crc
+        for (Crc1_Index = 8; Crc1_Index != 0; Crc1_Index--)
+        {    // Loop over each bit
+            if ((Crc_Temp & 0x0001) != 0)
+            {      // If the LSB is set
+                Crc_Temp >>= 1;                    // Shift right and XOR 0xA001
+                Crc_Temp ^= 0xA001;
+            }
+            else                            // Else LSB is not set
+                Crc_Temp >>= 1;                    // Just shift right
+        }
+        Buf_Crc++;
+    }
+    return Crc_Temp;
+}
+
+void dataTrans(unsigned char MAYx)  //can gui data may nao len may 1 hay may 2
+{
+    if (MAYx == MAY1)
+    {
+        realTimeInX1.hour    =   realTimeIn1.hour;
+        realTimeInX1.minute  =   realTimeIn1.minute;
+        realTimeInX1.second  =   realTimeIn1.second;
+        realTimeInX1.date    =   realTimeIn1.date;
+        realTimeInX1.month   =   realTimeIn1.month;
+        realTimeInX1.year    =   realTimeIn1.year; 
+        
+        realTimeOutX1.hour    =   realTimeOut1.hour;
+        realTimeOutX1.minute  =   realTimeOut1.minute;
+        realTimeOutX1.second  =   realTimeOut1.second;
+        realTimeOutX1.date    =   realTimeOut1.date;
+        realTimeOutX1.month   =   realTimeOut1.month;
+        realTimeOutX1.year    =   realTimeOut1.year;
+          
+        timeLuuHoaX1.hour    =   timeLuuHoa1.hour;
+        timeLuuHoaX1.minute  =   timeLuuHoa1.minute;
+        timeLuuHoaX1.second  =   timeLuuHoa1.second; 
+        
+        timeThaoTacX1.hour   =   timeThaoTac1.hour;
+        timeThaoTacX1.minute =   timeThaoTac1.minute;
+        timeThaoTacX1.second =   timeThaoTac1.second;
+        
+    }
+    else if (MAYx == MAY2)
+    {
+        realTimeInX2.hour    =   realTimeIn2.hour;
+        realTimeInX2.minute  =   realTimeIn2.minute;
+        realTimeInX2.second  =   realTimeIn2.second;
+        realTimeInX2.date    =   realTimeIn2.date;
+        realTimeInX2.month   =   realTimeIn2.month;
+        realTimeInX2.year    =   realTimeIn2.year;
+        
+        realTimeOutX2.hour    =   realTimeOut2.hour;
+        realTimeOutX2.minute  =   realTimeOut2.minute;
+        realTimeOutX2.second  =   realTimeOut2.second;
+        realTimeOutX2.date    =   realTimeOut2.date;
+        realTimeOutX2.month   =   realTimeOut2.month;
+        realTimeOutX2.year    =   realTimeOut2.year;
+         
+        timeLuuHoaX2.hour    =   timeLuuHoa2.hour;
+        timeLuuHoaX2.minute  =   timeLuuHoa2.minute;
+        timeLuuHoaX2.second  =   timeLuuHoa2.second;
+        
+        timeThaoTacX2.hour   =   timeThaoTac2.hour;
+        timeThaoTacX2.minute =   timeThaoTac2.minute;
+        timeThaoTacX2.second =   timeThaoTac2.second;
+    }
+}
+
+void transModbusRTU_dataMay_x(unsigned char MAYX) 
+{
+    unsigned char i;       
+    
+    if (MAYX == MAY1)
+    { 
+        buff_tx[0] = diaChiSlave;
+        buff_tx[1] = function_code;
+        buff_tx[2] = number_status1*2;      //so byte duoc gui len master 
+         
+        buff_tx[3]  = 0x00; 
+        buff_tx[4]  = realTimeInX1.hour;  
+        buff_tx[5]  = 0x00;    
+        buff_tx[6]  = realTimeInX1.minute;
+        buff_tx[7]  = 0x00;         
+        buff_tx[8]  = realTimeInX1.second; 
+        buff_tx[9]  = 0x00;                
+        buff_tx[10] = realTimeInX1.date;
+        buff_tx[11] = 0x00;          
+        buff_tx[12] = realTimeInX1.month;
+        buff_tx[13] = 0x00;                 
+        buff_tx[14] = realTimeInX1.year;
+        
+        buff_tx[15] = 0x00;   
+        buff_tx[16] = realTimeOutX1.hour;
+        buff_tx[17] = 0x00;                 
+        buff_tx[18] = realTimeOutX1.minute;
+        buff_tx[19] = 0x00; 
+        buff_tx[20] = realTimeOutX1.second; 
+        buff_tx[21] = 0x00;
+        buff_tx[22] = realTimeOutX1.date;
+        buff_tx[23] = 0x00;
+        buff_tx[24] = realTimeOutX1.month;
+        buff_tx[25] = 0x00;
+        buff_tx[26] = realTimeOutX1.year; 
+         
+        buff_tx[27] = 0x00;
+        buff_tx[28] = timeLuuHoaX1.hour;
+        buff_tx[29] = 0x00;
+        buff_tx[30] = timeLuuHoaX1.minute;  
+        buff_tx[31] = 0x00;
+        buff_tx[32] = timeLuuHoaX1.second;
+        buff_tx[33] = 0x00;   
+        
+        buff_tx[34] = timeThaoTacX1.hour; 
+        buff_tx[35] = 0x00;
+        buff_tx[36] = timeThaoTacX1.hour; 
+        buff_tx[37] = 0x00;
+        buff_tx[38] = timeThaoTacX1.second;  
+        
+        buff_tx[39] = 0x00;
+        buff_tx[40] = 0x00; //du phong
+        buff_tx[41] = 0x00;
+        buff_tx[42] = 0x00; //du phong
+                   
+        CRC16 = CRC_Check(&buff_tx[0],43);
+        buff_tx[43] = ((unsigned char *)&CRC16)[0];
+        buff_tx[44] = ((unsigned char *)&CRC16)[1];
+        buff_tx[45] = 0xFF;
+    }
+    
+    else if (MAYX == MAY2)
+    { 
+        buff_tx[0] = diaChiSlave;
+        buff_tx[1] = function_code;
+        buff_tx[2] = number_status1*2;      //so byte duoc gui len master 
+         
+        buff_tx[3]  = 0x00; 
+        buff_tx[4]  = realTimeInX2.hour;  
+        buff_tx[5]  = 0x00;    
+        buff_tx[6]  = realTimeInX2.minute;
+        buff_tx[7]  = 0x00;         
+        buff_tx[8]  = realTimeInX2.second; 
+        buff_tx[9]  = 0x00;                
+        buff_tx[10] = realTimeInX2.date;
+        buff_tx[11] = 0x00;          
+        buff_tx[12] = realTimeInX2.month;
+        buff_tx[13] = 0x00;                 
+        buff_tx[14] = realTimeInX2.year;
+        
+        buff_tx[15] = 0x00;   
+        buff_tx[16] = realTimeOutX2.hour;
+        buff_tx[17] = 0x00;                 
+        buff_tx[18] = realTimeOutX2.minute;
+        buff_tx[19] = 0x00; 
+        buff_tx[20] = realTimeOutX2.second; 
+        buff_tx[21] = 0x00;
+        buff_tx[22] = realTimeOutX2.date;
+        buff_tx[23] = 0x00;
+        buff_tx[24] = realTimeOutX2.month;
+        buff_tx[25] = 0x00;
+        buff_tx[26] = realTimeOutX2.year; 
+         
+        buff_tx[27] = 0x00;
+        buff_tx[28] = timeLuuHoaX2.hour;
+        buff_tx[29] = 0x00;
+        buff_tx[30] = timeLuuHoaX2.minute;  
+        buff_tx[31] = 0x00;
+        buff_tx[32] = timeLuuHoaX2.second;
+        buff_tx[33] = 0x00;   
+        
+        buff_tx[34] = timeThaoTacX2.hour; 
+        buff_tx[35] = 0x00;
+        buff_tx[36] = timeThaoTacX2.hour; 
+        buff_tx[37] = 0x00;
+        buff_tx[38] = timeThaoTacX2.second;  
+        
+        buff_tx[39] = 0x00;
+        buff_tx[40] = 0x00; //du phong
+        buff_tx[41] = 0x00;
+        buff_tx[42] = 0x00; //du phong
+                   
+        CRC16 = CRC_Check(&buff_tx[0],43);
+        buff_tx[43] = ((unsigned char *)&CRC16)[0];
+        buff_tx[44] = ((unsigned char *)&CRC16)[1];
+        buff_tx[45] = 0xFF;
+    }
+    
+    DE = 1; 
+    delay_ms(10); 
+    for(i=0;i<=45;i++)
+    { 
+        send1(buff_tx[i]); 
+    }
+    delay_ms(10);  
+    DE = 0;   
+}
+
+void transModbusRTU_setup() //gui du lieu tra lai xac nhan thoi gian realtime va addr dduojc thiet lap
+{
+    unsigned char i; 
+    buff_tx[0] = diaChiSlave;
+    buff_tx[1] = 0x03;
+    buff_tx[2] = number_status1*2;      //so byte duoc gui len master 
+                   
+    read_ds3231_datetime(&current);
+    buff_tx[3]  = 0x00; 
+    buff_tx[4]  = diaChiSlave;  
+    buff_tx[5]  = 0x00;    
+    buff_tx[6]  = current.hour;
+    buff_tx[7]  = 0x00;         
+    buff_tx[8]  = current.minute; 
+    buff_tx[9]  = 0x00;                
+    buff_tx[10] = current.second;
+    buff_tx[11] = 0x00;          
+    buff_tx[12] = current.date;
+    buff_tx[13] = 0x00;                 
+    buff_tx[14] = current.month;
+    buff_tx[15] = 0x00;        
+    buff_tx[16] = current.year;  
+    buff_tx[17] = 0x00;        
+    buff_tx[18] = 0x00;    //du phong
+    buff_tx[19] = 0x00;        
+    buff_tx[20] = 0x00;    //du phong 
+    buff_tx[21] = 0x00;        
+    buff_tx[22] = 0x00;    //du phong 
+    
+    CRC16 = CRC_Check(&buff_tx[0],23);
+    buff_tx[23] = ((unsigned char *)&CRC16)[0];
+    buff_tx[24] = ((unsigned char *)&CRC16)[1];
+    buff_tx[25] = 0xFF; 
+    
+    DE = 1; 
+    delay_ms(10); 
+    for(i=0;i<=25;i++)
+    { 
+        send1(buff_tx[i]); 
+    }
+    delay_ms(10);  
+    DE = 0;  
+}
+
+//interrupt [USART_RXC] void rx_isr()
+interrupt [USART_RXC] void usart_rx_isr(void)
+{
+//    if (RXCIE0 && RXC0)
+    {        
+        buff_rx[length_rx] = UDR0;       
+        if((UCSR0A & (1<<RXC0))==0)    //(UCSRA.7==0)      
+        {  
+            if ((buff_rx[0] == diaChiSlave) || (buff_rx[0] == 0x00))
+            {   
+//                send("vao modbus ok!\r\n");
+                if (length_rx == 1)
+                    function_code = buff_rx[1]; 
+
+                if (length_rx == 6 && function_code == 0x10)
+                {   
+//                    send("length=6?\r\n"); 
+                    address_register1 = buff_rx[3];    //dia chi thanh ghi dau tien
+                    number_status1 = buff_rx[5];   //so word
+                    number_byte1 = buff_rx[6];   //so byte ghi vao vung nho
+                }   
+                else if (length_rx == 5 && function_code == 0x03)
+                {   
+                    address_register1 = buff_rx[3];    //dia chi thanh ghi dau tien
+                    number_status1 = buff_rx[5];   //so word
+                }                                          
+                            
+                if (length_rx == 8 + number_byte1 && function_code == 0x10 && address_register1 == 0x0A )   //phan hoi ghi realtime va addr slave
+                { 
+//                    send("Fx=10?");  
+                    CRC16 = CRC_Check(&buff_rx[0],length_rx-1);
+                    if (( buff_rx[length_rx-1] == ((unsigned char *)&CRC16)[0] ) && (buff_rx[length_rx] = ((unsigned char *)&CRC16)[1] )) 
+                        F_rx = 10;
+                }
+                else if (length_rx == 7 && function_code == 0x03 && (address_register1 == 0x15 || address_register1 == 0x29))  //doc data may 1 hoac may 2
+                {
+                    CRC16 = CRC_Check(&buff_rx[0],length_rx-1);
+                    if (( buff_rx[length_rx-1] == ((unsigned char *)&CRC16)[0] ) && (buff_rx[length_rx] = ((unsigned char *)&CRC16)[1] )) 
+                        F_rx = 3;
+                }
+                else 
+                    F_rx = 0;
+            }    
+            length_rx ++;
+        }
+        UCSR0A=(0<<RXC0);    //Xoa co nhan   //UCSRA.7=0;  
+    }
+}
+
+//==========================BEGIN DOC GHI VAO EPPROM ==========================
+void epprom_write(unsigned int add, unsigned char data)
+{
+    while(EECR & (1<<EEPE));
+    EEAR=add;
+    EEDR=data;
+    EECR=(1<<EEMPE);
+    EECR|=(1<<EEPE);
+}
+
+unsigned char epprom_read(unsigned int add)
+{
+    while(EECR & (1<<EEPE));
+    EEAR=add;
+    EECR|=(1<<EERE);
+    return EEDR; 
+} 
+
+void setting()
+{
+    if (epprom_read(0x010) != 1)
+    {
+        epprom_write(addr_baudrate,0x01); //1            //khoi tao khi nap code co baudrate 9600     
+        epprom_write(addr_diaChiSlave,0x01);          //khoi tao khi nap code chon dia chi slave la 01
+        epprom_write(0x010,1); //sau khi luu gia tri default cho cac thong so thi set len 1 de sau ko ghi nua 
+        set_ds3231_datetime(&set_time);     //set realtime 1 lan khi nap code
+    } 
+     
+    mode_baudrate        = epprom_read(addr_baudrate);     
+    diaChiSlave     = epprom_read(addr_diaChiSlave); 
+    
+    if      (mode_baudrate == 1)
+        UBRR0L = 71;     // THACH ANH 11.0592Mhz  71  9600  baud
+    else if (mode_baudrate == 2) 
+        UBRR0L = 47;     // THACH ANH 11.0592Mhz  47  14400 baud
+    else if (mode_baudrate == 3) 
+        UBRR0L = 35;     // THACH ANH 11.0592Mhz  35  19200 baud 
+    else if (mode_baudrate == 4) 
+        UBRR0L = 17;     // THACH ANH 11.0592Mhz  17  38400 baud  
+        
+    DE = 0;  
+    timeSetOn1 = timeSet;
+    timeSetOn2 = timeSet;
+}
+
+//==========================END DOC GHI VAO EPPROM ==========================  
+
+void main(void)
+{       
+    Init();    
+    i2c_init();
+    delay_ms(100); 
+    setting();
+    realTimeOut1.hour = realTimeOut1.minute = realTimeOut1.second = 0; 
+    
+//    send("start!");
+    
+    while (1)
+    {   
+        /*  
+        //========================================================
+           read_ds3231_datetime(&current);
+            
+//             In ra UART neu can
+             printf("Time: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+                    current.hour, current.minute, current.second,
+                    current.date, current.month, current.year);
+
+            delay_ms(1000); 
+        //========================================================  
+        */  
+        
+        if (F_rx == 10)
+        {   
+            diaChiSlave     =   buff_rx[8];
+            set_time.hour   =   buff_rx[10];
+            set_time.minute =   buff_rx[12];
+            set_time.second =   buff_rx[14];
+            set_time.date   =   buff_rx[16];
+            set_time.month  =   buff_rx[18];
+            set_time.year   =   buff_rx[20]; 
+            set_ds3231_datetime(&set_time); 
+            delay_ms(100);
+            transModbusRTU_setup(); 
+            F_rx = 0; 
+//            send("ghi suscess");
+            epprom_write(addr_diaChiSlave,diaChiSlave);
+        }
+        
+        else if (F_rx == 3)
+        {  
+            delay_ms(100);  //tach chuoi hoi ra           
+            if (address_register1 == 0x15)
+            { 
+                transModbusRTU_dataMay_x(MAY1);
+            }
+            else if (address_register1 == 0x29)
+            { 
+                transModbusRTU_dataMay_x(MAY2);
+            }
+                 
+            F_rx = 0; 
+        }
+        
+        
+        //========================================================
+        //GHI THOI GIAN IN OUT SENSSOR 1  
+//        if(IN1 == OFF && chuTrinhMay1 == OFF && timeSetOn1 == 0) 
+        if(IN2 == OFF && chuTrinhMay1 == OFF && timeSetOn1 == 0)
+        {    
+            chuTrinhMay1 = ON; 
+            read_ds3231_datetime(&realTimeIn1);     //may 1      //doc lan 1 de tinh time thao tac
+            
+            //tinh time thao tac tu lan ra truoc toi lan vao tiep theo  
+            if ((realTimeOut1_QK.hour || realTimeOut1_QK.minute || realTimeOut1_QK.second) != 0)
+            {    
+                if (realTimeIn1.second >= realTimeOut1_QK.second)
+                    timeThaoTac1.second = realTimeIn1.second - realTimeOut1_QK.second; 
+                else 
+                {
+                    timeThaoTac1.second = realTimeIn1.second + 60 - realTimeOut1_QK.second;
+                    realTimeIn1.minute = realTimeIn1.minute - 1;  
+                }
+                if (realTimeIn1.minute >= realTimeOut1_QK.minute)
+                    timeThaoTac1.minute = realTimeIn1.minute - realTimeOut1_QK.minute; 
+                else 
+                {
+                    timeThaoTac1.minute = realTimeIn1.minute + 60 - realTimeOut1_QK.minute;
+                    realTimeIn1.hour = realTimeIn1.hour - 1;  
+                } 
+                if (realTimeIn1.hour >= realTimeOut1_QK.hour)
+                    timeThaoTac1.hour = realTimeIn1.hour - realTimeOut1_QK.hour; 
+                else 
+                {
+                    timeThaoTac1.hour = realTimeIn1.hour + 24 - realTimeOut1_QK.hour;
+                    realTimeIn1.day = realTimeIn1.day - 1;  
+                }
+                
+//                DE = 1;      
+//                printf("Time thao tac may 1: %02u:%02u:%02u\r\n",
+//                    timeThaoTac1.hour, timeThaoTac1.minute, timeThaoTac1.second); 
+//                DE = 0;
+            }     
+            
+            read_ds3231_datetime(&realTimeIn1);     //may 1   //doc lan 2 de luu lai gia tri vao
+//            DE = 1; 
+//            printf("Time lieu vao may 1: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+//                realTimeIn1.hour, realTimeIn1.minute, realTimeIn1.second,
+//                realTimeIn1.date, realTimeIn1.month, realTimeIn1.year); 
+//            DE = 0; 
+                
+//            chuTrinhMay1 = ON; 
+            timeSetOn1 = timeSet;
+//            delay_ms(200);
+        }  
+        
+//        if(IN2 == OFF && chuTrinhMay1 == ON && timeSetOn1 == 0) 
+        if(IN2 == ON && chuTrinhMay1 == ON && timeSetOn1 == 0) 
+        {       
+            realTimeOut1_QK.hour = realTimeOut1.hour;
+            realTimeOut1_QK.minute = realTimeOut1.minute;
+            realTimeOut1_QK.second = realTimeOut1.second;    
+        
+            read_ds3231_datetime(&realTimeOut1);    //may 1  //tinh time thao tac  
+//            DE = 1;
+//            printf("Time lieu ra may 1: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+//                realTimeOut1.hour, realTimeOut1.minute, realTimeOut1.second,
+//                realTimeOut1.date, realTimeOut1.month, realTimeOut1.year);
+//            DE = 0;
+            
+            
+            //tinh time luu hoa may 1
+            timeLuuHoa1.hour = realTimeOut1.hour - realTimeIn1.hour;
+            timeLuuHoa1.minute = realTimeOut1.minute - realTimeIn1.minute;
+            timeLuuHoa1.second = realTimeOut1.second - realTimeIn1.second;
+            
+            if (realTimeOut1.second >= realTimeIn1.second)
+                timeLuuHoa1.second = realTimeOut1.second - realTimeIn1.second; 
+            else 
+            {
+                timeLuuHoa1.second = realTimeOut1.second + 60 - realTimeIn1.second;
+                realTimeOut1.minute = realTimeOut1.minute - 1;  
+            }
+            if (realTimeOut1.minute >= realTimeIn1.minute)
+                timeLuuHoa1.minute = realTimeOut1.minute - realTimeIn1.minute; 
+            else 
+            {
+                timeLuuHoa1.minute = realTimeOut1.minute + 60 - realTimeIn1.minute;
+                realTimeOut1.hour = realTimeOut1.hour - 1;  
+            } 
+            if (realTimeOut1.hour >= realTimeIn1.hour)
+                timeLuuHoa1.hour = realTimeOut1.hour - realTimeIn1.hour; 
+            else 
+            {
+                timeLuuHoa1.hour = realTimeOut1.hour + 24 - realTimeIn1.hour;
+                realTimeOut1.day = realTimeOut1.day - 1;  
+            }
+            
+//            DE = 1;
+//            printf("Time Luu Hoa may 1: %02u:%02u:%02u\r\n",
+//                timeLuuHoa1.hour, timeLuuHoa1.minute, timeLuuHoa1.second);
+//            DE = 0;  
+            
+            read_ds3231_datetime(&realTimeOut1);    //may 1  //doc lan 2 luu lai gia tri time out
+             
+
+//            dataTrans(MAY1);
+            chuTrinhMay1 = OFF;
+            timeSetOn1 = timeSet;
+            delay_ms(100);  
+            dataTrans(MAY1);
+        }        
+        //========================================================   
+        
+        //========================================================
+        //GHI THOI GIAN IN OUT SENSSOR 2
+//        if(IN3 == OFF && chuTrinhMay2 == OFF && timeSetOn2 == 0) 
+        if(IN4 == ON && chuTrinhMay2 == OFF && timeSetOn2 == 0)
+        {    
+            chuTrinhMay2 = ON; 
+            read_ds3231_datetime(&realTimeIn2);     //may 2  // doc lan 1 tinh time thao tac
+            
+            //tinh time thao tac tu lan ra truoc toi lan vao tiep theo  
+            if ((realTimeOut2.hour || realTimeOut2.minute || realTimeOut2.second) != 0)
+            {    
+                if (realTimeIn2.second >= realTimeOut2.second)
+                    timeThaoTac2.second = realTimeIn2.second - realTimeOut2.second; 
+                else 
+                {
+                    timeThaoTac2.second = realTimeIn2.second + 60 - realTimeOut2.second;
+                    realTimeIn2.minute = realTimeIn2.minute - 1;  
+                }
+                if (realTimeIn2.minute >= realTimeOut2.minute)
+                    timeThaoTac2.minute = realTimeIn2.minute - realTimeOut2.minute; 
+                else 
+                {
+                    timeThaoTac2.minute = realTimeIn2.minute + 60 - realTimeOut2.minute;
+                    realTimeIn2.hour = realTimeIn2.hour - 1;  
+                } 
+                if (realTimeIn2.hour >= realTimeOut2.hour)
+                    timeThaoTac2.hour = realTimeIn2.hour - realTimeOut2.hour; 
+                else 
+                {
+                    timeThaoTac2.hour = realTimeIn2.hour + 24 - realTimeOut2.hour;
+                    realTimeIn2.day = realTimeIn2.day - 1;  
+                }
+                
+//                DE = 1;      
+//                printf("Time thao tac may 2: %02u:%02u:%02u\r\n",
+//                    timeThaoTac2.hour, timeThaoTac2.minute, timeThaoTac2.second); 
+//                DE = 0;
+            }
+            read_ds3231_datetime(&realTimeIn2);     //may 2   //doc lan 2 de luu lai gia tri vao
+//            DE = 1; 
+//            printf("Time lieu vao may 2: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+//                realTimeIn2.hour, realTimeIn2.minute, realTimeIn2.second,
+//                realTimeIn2.date, realTimeIn2.month, realTimeIn2.year); 
+//            DE = 0; 
+                
+//            chuTrinhMay2 = ON;
+            timeSetOn2 = timeSet;
+//            delay_ms(200);
+        }  
+        
+//        if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0)
+        if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0) 
+        {     
+            timeThaoTac2.hour   = 0;
+            timeThaoTac2.minute = 0;
+            timeThaoTac2.second = 0;    
+        
+            read_ds3231_datetime(&realTimeOut2);    //may 2     // doc lan 1 tinh time thao tac
+//            DE = 1;
+//            printf("Time lieu ra may 2: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+//                realTimeOut2.hour, realTimeOut2.minute, realTimeOut2.second,
+//                realTimeOut2.date, realTimeOut2.month, realTimeOut2.year);
+//            DE = 0;
+            
+            
+            //tinh time luu hoa may 2
+            timeLuuHoa2.hour = realTimeOut2.hour - realTimeIn2.hour;
+            timeLuuHoa2.minute = realTimeOut2.minute - realTimeIn2.minute;
+            timeLuuHoa2.second = realTimeOut2.second - realTimeIn2.second;
+            
+            if (realTimeOut2.second >= realTimeIn2.second)
+                timeLuuHoa2.second = realTimeOut2.second - realTimeIn2.second; 
+            else 
+            {
+                timeLuuHoa2.second = realTimeOut2.second + 60 - realTimeIn2.second;
+                realTimeOut2.minute = realTimeOut2.minute - 1;  
+            }
+            if (realTimeOut2.minute >= realTimeIn2.minute)
+                timeLuuHoa2.minute = realTimeOut2.minute - realTimeIn2.minute; 
+            else 
+            {
+                timeLuuHoa2.minute = realTimeOut2.minute + 60 - realTimeIn2.minute;
+                realTimeOut2.hour = realTimeOut2.hour - 1;  
+            } 
+            if (realTimeOut2.hour >= realTimeIn2.hour)
+                timeLuuHoa2.hour = realTimeOut2.hour - realTimeIn2.hour; 
+            else 
+            {
+                timeLuuHoa2.hour = realTimeOut2.hour + 24 - realTimeIn2.hour;
+                realTimeOut2.day = realTimeOut2.day - 1;  
+            }
+            
+//            DE = 1;
+//            printf("Time Luu Hoa may 2: %02u:%02u:%02u\r\n",
+//                timeLuuHoa2.hour, timeLuuHoa2.minute, timeLuuHoa2.second);
+//            DE = 0;  
+            
+            read_ds3231_datetime(&realTimeOut2);    //may 2  //doc lan 2 luu lai gia tri time out
+                                                                                                                         
+//            dataTrans(MAY2);
+            chuTrinhMay2 = OFF; 
+            timeSetOn2 = timeSet;
+            delay_ms(100);   
+            dataTrans(MAY2);
+        }        
+        //========================================================
+    }
+}

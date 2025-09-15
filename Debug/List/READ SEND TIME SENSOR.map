@@ -1,0 +1,71 @@
+RAM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+buff_rx                                                                           0x0300      50
+buff_tx                                                                           0x0332      50
+timeSetOn2                                                                        0x0364       1
+demIN2                                                                            0x0365       1
+demIN4                                                                            0x0366       1
+current                                                                           0x0367       7
+realTimeIn1                                                                       0x036E       7
+realTimeOut1                                                                      0x0375       7
+realTimeOut1_QK                                                                   0x037C       7
+realTimeIn2                                                                       0x0383       7
+realTimeOut2                                                                      0x038A       7
+timeLuuHoa1                                                                       0x0391       7
+timeLuuHoa2                                                                       0x0398       7
+timeThaoTac1                                                                      0x039F       7
+timeThaoTac2                                                                      0x03A6       7
+realTimeInX1                                                                      0x03AD       7
+realTimeOutX1                                                                     0x03B4       7
+timeLuuHoaX1                                                                      0x03BB       7
+timeThaoTacX1                                                                     0x03C2       7
+realTimeInX2                                                                      0x03C9       7
+realTimeOutX2                                                                     0x03D0       7
+timeLuuHoaX2                                                                      0x03D7       7
+timeThaoTacX2                                                                     0x03DE       7
+set_time                                                                          0x03E5       7
+_seed                                                                             0x03EC       4
+
+EEPROM Allocation [bytes]
+Variable                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                                          Register  Size
+------------------------------------------------------------------------------------------------
+mode_baudrate                                                                     R4           1
+diaChiSlave                                                                       R3           1
+length_rx                                                                         R6           1
+function_code                                                                     R5           1
+address_register1                                                                 R8           1
+number_register1                                                                  R7           1
+number_byte1                                                                      R10          1
+number_status1                                                                    R9           1
+CRC16                                                                             R11,R12      2
+F_rx                                                                              R14          1
+timeSetOn1                                                                        R13          1
+chuTrinhMay1                                                                      GPIOR0.0  1bit
+chuTrinhMay2                                                                      GPIOR0.1  1bit
+
+FLASH Allocation [words]
+Function                                                                          Address   Size
+------------------------------------------------------------------------------------------------
+Init                                                                              0x00085     94
+bcd_to_dec                                                                        0x000E3     12
+dec_to_bcd                                                                        0x000EF     18
+set_ds3231_datetime                                                               0x00101     30
+read_ds3231_datetime                                                              0x0011F     58
+timer0_ovf_isr                                                                    0x00159      4
+timer1_ovf_isr                                                                    0x0015D     45
+timer2_ovf_isr                                                                    0x0018A      6
+send1                                                                             0x00190      9
+CRC_Check                                                                         0x00199     43
+dataTrans                                                                         0x001C4    156
+transModbusRTU_dataMay_x                                                          0x00260    249
+transModbusRTU_setup                                                              0x00359     82
+usart_rx_isr                                                                      0x003AB    138
+epprom_write                                                                      0x00435     14
+epprom_read                                                                       0x00443     12
+setting                                                                           0x0044F     55
+main                                                                              0x00486    553
