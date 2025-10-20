@@ -18,7 +18,7 @@ OutputListFilesDirectory=Release\List
 OutputObjectFilesDirectory=Release
 OutputExecutableFilesDirectory=Release\Exe
 OutputLinkerFilesDirectory=Release\Exe
-AllowDisplayFunctionCallTree=1
+AllowDisplayFunctionCallTree=0
 CleanUp=2
 EditorPanelMode=0
 ActiveEditorPanel=0
@@ -51,7 +51,7 @@ PageIndex5=5
 OF6=READ SEND TIME SENSOR V4.0.c
 Active6=1
 EditorPanel6=0
-TimeStamp6=1529839461
+TimeStamp6=1532010071
 PageIndex6=6
 TimeStamp0=1529839461
 OF7=READ SEND TIME SENSOR V2.4.c
@@ -59,7 +59,7 @@ Active7=0
 EditorPanel7=0
 TimeStamp7=1525851897
 PageIndex7=7
-F1=READ SEND TIME SENSOR V4.0.c
+F1=READ SEND TIME SENSOR V2.4.c
 [CompilerDebug]
 Chip=ATmega328P
 CPUClock=11059200
@@ -158,8 +158,8 @@ WatchAVR8LAutoVariables=0
 UseEEPROMLocation0=1
 RebuildAll=0
 LinkageInformationPresent=1
-COFFileTimeStamp=1529583125
-Build=82
+COFFileTimeStamp=1532122972
+Build=113
 [DefinedSymbolsDebug]
 Count=0
 [Compiler]
@@ -261,7 +261,7 @@ UseEEPROMLocation0=1
 RebuildAll=1
 LinkageInformationPresent=0
 COFFileTimeStamp=-1
-Build=82
+Build=113
 IncludePath0=
 IncludePath1=
 IncludePath2=
@@ -484,9 +484,9 @@ Row=0
 Column=0
 ScrollPosX=0
 ScrollPosY=0
-TimeStamp=1529839461
+TimeStamp=1532055222
 [BookmarksFoldedCode]
-Files=24
+Files=25
 F1=READ SEND TIME SENSOR V1.0.c
 F2=C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT\Init.c
 F3=..\PC Power Switch V2\Init.h
@@ -511,6 +511,7 @@ F21=READ SEND TIME SENSOR V3.1.c
 F22=READ SEND TIME SENSOR V2.4.c
 F23=InitV20.h
 F24=C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\READ SEND TIME SENSOR V4.0.c
+F25=READ SEND TIME SENSOR V4.0.c
 [Bookmarks1]
 TimeStamp=1522092779
 Row=161
@@ -544,8 +545,8 @@ L13=Enhanced function parameters passing: Yes
 L14=Automatic register allocation: Yes
 L15=Smart register allocation: Yes
 L16=
-L17=Build: 81
-L18=12980 line(s) compiled
+L17=Build: 113
+L18=13010 line(s) compiled
 L19=No errors
 L20=3 warning(s)
 L21=
@@ -556,30 +557,30 @@ L25=Data Stack area: 0x100 to 0x2FF
 L26=Data Stack size: 512 byte(s)
 L27=Estimated Data Stack usage: 28 byte(s)
 L28=
-L29=RAM Global variables area: 0x300 to 0x3EF
-L30=RAM Global variables size: 240 byte(s)
+L29=RAM Global variables area: 0x300 to 0x3ED
+L30=RAM Global variables size: 238 byte(s)
 L31=
-L32=Hardware Stack area: 0x3F0 to 0x8FF
-L33=Hardware Stack size: 1296 byte(s)
+L32=Hardware Stack area: 0x3EE to 0x8FF
+L33=Hardware Stack size: 1298 byte(s)
 L34=
 L35=Heap size: 0 byte(s)
 Lines=39
 L36=
 L37=EEPROM usage: 0 byte(s), 0.0% of EEPROM
-L38=Program size: 2055 words (4110 bytes), 12.5% of FLASH
-L39=103 words (206 bytes), 4.8% reduced by Code Compression
+L38=Program size: 1981 words (3962 bytes), 12.1% of FLASH
+L39=100 words (200 bytes), 4.8% reduced by Code Compression
 [BuildInfoAssembler]
 Lines=12
 L1=AVRASM: AVR macro assembler 2.1.30 (build 592 Nov  7 2008 12:38:17)
 L2=Copyright (C) 1995-2008 ATMEL Corporation
 L3=
-L4=C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\Debug\List\READ SEND TIME SENSOR.asm(3979): No EEPROM data, deleting C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\Debug\Exe\READ SEND TIME SENSOR.eep
+L4=C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\Debug\List\READ SEND TIME SENSOR.asm(3938): No EEPROM data, deleting C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\Debug\Exe\READ SEND TIME SENSOR.eep
 L5=
 L6=ATmega328P memory use summary [bytes]:
 L7=Segment   Begin    End      Code   Data   Used    Size   Use%
 L8=---------------------------------------------------------------
-L9=[.cseg] 0x000000 0x00100e   4042     68   4110   32768  12.5%
-L10=[.dseg] 0x000100 0x0003f0      0    240    240    2048  11.7%
+L9=[.cseg] 0x000000 0x000f7a   3894     68   3962   32768  12.1%
+L10=[.dseg] 0x000100 0x0003ee      0    238    238    2048  11.6%
 L11=[.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 L12=
 L13=C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\Debug\List\READ SEND TIME SENSOR.asm(3483): error: Undefined symbol: __scl_bit
@@ -1007,21 +1008,6 @@ Line1=334
 Blocks=1
 [FoldedCode1]
 Blocks=0
-[HeadersList]
-Files=1
-F1=C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\READ SEND TIME SENSOR V4.0.c
-[Header1]
-Files=10
-F1=C:\cvavr\inc\mega328p.h
-F2=C:\cvavr\inc\mega328p_bits.h
-F3=InitV20.h
-F4=C:\cvavr\inc\delay.h
-F5=C:\cvavr\inc\string.h
-F6=C:\cvavr\inc\stdlib.h
-F7=C:\cvavr\inc\i2c.h
-F8=C:\cvavr\inc\stdio.h
-F9=C:\cvavr\inc\io.h
-F10=C:\cvavr\inc\stdarg.h
 [Bookmarks24]
 TimeStamp=1529839461
 Row=41
@@ -1040,6 +1026,24 @@ BK8=-1
 BK9=-1
 [FoldedCode24]
 Blocks=0
+[Bookmarks25]
+TimeStamp=1532010071
+Row=835
+Column=33
+ScrollPosX=0
+ScrollPosY=815
+BK0=-1
+BK1=-1
+BK2=-1
+BK3=-1
+BK4=-1
+BK5=-1
+BK6=-1
+BK7=-1
+BK8=-1
+BK9=-1
+[FoldedCode25]
+Blocks=0
 [FoldedCode22]
 Blocks=0
 [FoldedCode23]
@@ -1050,3 +1054,18 @@ Blocks=0
 Blocks=0
 [FoldedCode18]
 Blocks=0
+[HeadersList]
+Files=1
+F1=C:\Users\anhhu\Documents\CodeVisionAVR\VART\READ SEND TIME SENSOR_THO AMT_AT328P\READ SEND TIME SENSOR V2.4.c
+[Header1]
+Files=10
+F1=C:\cvavr\inc\mega328p.h
+F2=C:\cvavr\inc\mega328p_bits.h
+F3=Init.h
+F4=C:\cvavr\inc\delay.h
+F5=C:\cvavr\inc\string.h
+F6=C:\cvavr\inc\stdlib.h
+F7=C:\cvavr\inc\i2c.h
+F8=C:\cvavr\inc\stdio.h
+F9=C:\cvavr\inc\io.h
+F10=C:\cvavr\inc\stdarg.h

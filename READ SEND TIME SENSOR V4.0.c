@@ -716,7 +716,8 @@ void main(void)
 //        if(IN2 == OFF && chuTrinhMay1 == ON && timeSetOn1 == 0) 
         if(IN2 == OFF && chuTrinhMay1 == ON && timeSetOn1 == 0 && demIN2 == 0)      //IN2  0->1: lieu ra        //demIN2 tính so lan kich sensor out lan 1
         {
-            demIN2 = 1;  
+            demIN2 = 1;
+            timeSetOn1 = timeSet;  
         }
         
         if(IN2 == OFF && chuTrinhMay1 == ON && timeSetOn1 == 0 && demIN2 == 1)      //IN2  0->1: lieu ra       //demIN2 tính so lan kich sensor out lan 2
@@ -831,7 +832,8 @@ void main(void)
 //        if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0)
         if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0 && demIN4 == 0)      //IN4  0->1: lieu ra        //demIN2 tính so lan kich sensor out lan 1
         {
-            demIN4 = 1;  
+            demIN4 = 1; 
+            timeSetOn2 = timeSet; 
         }
         
         if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0 && demIN4 == 1)     //IN4  0->1: lieu ra        //demIN2 tính so lan kich sensor out lan 2

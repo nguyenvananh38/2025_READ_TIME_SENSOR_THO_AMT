@@ -101,7 +101,7 @@ Data Stack size         : 512
 #define addr_baudrate        0x011
 #define addr_diaChiSlave     0x012
 
-#define timeSet   20    //20x100ms  //sau timeSetOn ms thì tính là có tin hieu
+#define timeSet   20    //20x100ms  //sau timeSetOn ms thì tính là  có tin hieu
 
 unsigned char mode_baudrate;
 unsigned char diaChiSlave;

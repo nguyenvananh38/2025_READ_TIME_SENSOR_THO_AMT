@@ -216,7 +216,7 @@
 ;#define addr_baudrate        0x011
 ;#define addr_diaChiSlave     0x012
 ;
-;#define timeSet   20    //20x100ms  //sau timeSetOn ms thì tính là có tin hieu
+;#define timeSet   20    //20x100ms  //sau timeSetOn ms thì tính là  có tin hieu
 ;
 ;unsigned char mode_baudrate;
 ;unsigned char diaChiSlave;
@@ -2308,11 +2308,12 @@
 ; 0000 02CF             demIN2 = 1;
 ;PCODE: $00000609 VOL: 0
 ;PCODE: $0000060A VOL: 0
-; 0000 02D0         }
-; 0000 02D1 
-; 0000 02D2         if(IN2 == OFF && chuTrinhMay1 == ON && timeSetOn1 == 0 && demIN2 == 1)      //IN2  0->1: lieu ra       //demIN2  ...
+; 0000 02D0             timeSetOn1 = timeSet;
 ;PCODE: $0000060B VOL: 0
 ;PCODE: $0000060C VOL: 0
+; 0000 02D1         }
+; 0000 02D2 
+; 0000 02D3         if(IN2 == OFF && chuTrinhMay1 == ON && timeSetOn1 == 0 && demIN2 == 1)      //IN2  0->1: lieu ra       //demIN2  ...
 ;PCODE: $0000060D VOL: 0
 ;PCODE: $0000060E VOL: 0
 ;PCODE: $0000060F VOL: 0
@@ -2327,191 +2328,191 @@
 ;PCODE: $00000618 VOL: 0
 ;PCODE: $00000619 VOL: 0
 ;PCODE: $0000061A VOL: 0
-; 0000 02D3         {
-; 0000 02D4             demIN2 = 2;
 ;PCODE: $0000061B VOL: 0
 ;PCODE: $0000061C VOL: 0
-; 0000 02D5             realTimeOut1_QK.hour = realTimeOut1.hour;
+; 0000 02D4         {
+; 0000 02D5             demIN2 = 2;
 ;PCODE: $0000061D VOL: 0
 ;PCODE: $0000061E VOL: 0
+; 0000 02D6             realTimeOut1_QK.hour = realTimeOut1.hour;
 ;PCODE: $0000061F VOL: 0
 ;PCODE: $00000620 VOL: 0
-; 0000 02D6             realTimeOut1_QK.minute = realTimeOut1.minute;
 ;PCODE: $00000621 VOL: 0
 ;PCODE: $00000622 VOL: 0
+; 0000 02D7             realTimeOut1_QK.minute = realTimeOut1.minute;
 ;PCODE: $00000623 VOL: 0
 ;PCODE: $00000624 VOL: 0
-; 0000 02D7             realTimeOut1_QK.second = realTimeOut1.second;
 ;PCODE: $00000625 VOL: 0
 ;PCODE: $00000626 VOL: 0
-; 0000 02D8 
-; 0000 02D9             read_ds3231_datetime(&realTimeOut1);    //may 1  //tinh time thao tac
+; 0000 02D8             realTimeOut1_QK.second = realTimeOut1.second;
 ;PCODE: $00000627 VOL: 0
 ;PCODE: $00000628 VOL: 0
-; 0000 02DA //            DE = 1;
-; 0000 02DB //            printf("Time lieu ra may 1: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
-; 0000 02DC //                realTimeOut1.hour, realTimeOut1.minute, realTimeOut1.second,
-; 0000 02DD //                realTimeOut1.date, realTimeOut1.month, realTimeOut1.year);
-; 0000 02DE //            DE = 0;
-; 0000 02DF 
-; 0000 02E0 
-; 0000 02E1             //tinh time luu hoa may 1
-; 0000 02E2             timeLuuHoa1.hour = realTimeOut1.hour - realTimeIn1.hour;
+; 0000 02D9 
+; 0000 02DA             read_ds3231_datetime(&realTimeOut1);    //may 1  //tinh time thao tac
 ;PCODE: $00000629 VOL: 0
 ;PCODE: $0000062A VOL: 0
+; 0000 02DB //            DE = 1;
+; 0000 02DC //            printf("Time lieu ra may 1: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+; 0000 02DD //                realTimeOut1.hour, realTimeOut1.minute, realTimeOut1.second,
+; 0000 02DE //                realTimeOut1.date, realTimeOut1.month, realTimeOut1.year);
+; 0000 02DF //            DE = 0;
+; 0000 02E0 
+; 0000 02E1 
+; 0000 02E2             //tinh time luu hoa may 1
+; 0000 02E3             timeLuuHoa1.hour = realTimeOut1.hour - realTimeIn1.hour;
 ;PCODE: $0000062B VOL: 0
 ;PCODE: $0000062C VOL: 0
 ;PCODE: $0000062D VOL: 0
 ;PCODE: $0000062E VOL: 0
 ;PCODE: $0000062F VOL: 0
-; 0000 02E3             timeLuuHoa1.minute = realTimeOut1.minute - realTimeIn1.minute;
 ;PCODE: $00000630 VOL: 0
 ;PCODE: $00000631 VOL: 0
+; 0000 02E4             timeLuuHoa1.minute = realTimeOut1.minute - realTimeIn1.minute;
 ;PCODE: $00000632 VOL: 0
 ;PCODE: $00000633 VOL: 0
 ;PCODE: $00000634 VOL: 0
 ;PCODE: $00000635 VOL: 0
 ;PCODE: $00000636 VOL: 0
-; 0000 02E4             timeLuuHoa1.second = realTimeOut1.second - realTimeIn1.second;
 ;PCODE: $00000637 VOL: 0
 ;PCODE: $00000638 VOL: 0
+; 0000 02E5             timeLuuHoa1.second = realTimeOut1.second - realTimeIn1.second;
 ;PCODE: $00000639 VOL: 0
 ;PCODE: $0000063A VOL: 0
-; 0000 02E5 
-; 0000 02E6             if (realTimeOut1.second >= realTimeIn1.second)
 ;PCODE: $0000063B VOL: 0
 ;PCODE: $0000063C VOL: 0
+; 0000 02E6 
+; 0000 02E7             if (realTimeOut1.second >= realTimeIn1.second)
 ;PCODE: $0000063D VOL: 0
 ;PCODE: $0000063E VOL: 0
-; 0000 02E7                 timeLuuHoa1.second = realTimeOut1.second - realTimeIn1.second;
 ;PCODE: $0000063F VOL: 0
 ;PCODE: $00000640 VOL: 0
+; 0000 02E8                 timeLuuHoa1.second = realTimeOut1.second - realTimeIn1.second;
 ;PCODE: $00000641 VOL: 0
 ;PCODE: $00000642 VOL: 0
-; 0000 02E8             else
 ;PCODE: $00000643 VOL: 0
 ;PCODE: $00000644 VOL: 0
-; 0000 02E9             {
-; 0000 02EA                 timeLuuHoa1.second = realTimeOut1.second + 60 - realTimeIn1.second;
+; 0000 02E9             else
 ;PCODE: $00000645 VOL: 0
 ;PCODE: $00000646 VOL: 0
+; 0000 02EA             {
+; 0000 02EB                 timeLuuHoa1.second = realTimeOut1.second + 60 - realTimeIn1.second;
 ;PCODE: $00000647 VOL: 0
 ;PCODE: $00000648 VOL: 0
 ;PCODE: $00000649 VOL: 0
-; 0000 02EB                 realTimeOut1.minute = realTimeOut1.minute - 1;
 ;PCODE: $0000064A VOL: 0
 ;PCODE: $0000064B VOL: 0
+; 0000 02EC                 realTimeOut1.minute = realTimeOut1.minute - 1;
 ;PCODE: $0000064C VOL: 0
 ;PCODE: $0000064D VOL: 0
 ;PCODE: $0000064E VOL: 0
-; 0000 02EC             }
 ;PCODE: $0000064F VOL: 0
-; 0000 02ED             if (realTimeOut1.minute >= realTimeIn1.minute)
 ;PCODE: $00000650 VOL: 0
+; 0000 02ED             }
 ;PCODE: $00000651 VOL: 0
+; 0000 02EE             if (realTimeOut1.minute >= realTimeIn1.minute)
 ;PCODE: $00000652 VOL: 0
 ;PCODE: $00000653 VOL: 0
 ;PCODE: $00000654 VOL: 0
 ;PCODE: $00000655 VOL: 0
-; 0000 02EE                 timeLuuHoa1.minute = realTimeOut1.minute - realTimeIn1.minute;
 ;PCODE: $00000656 VOL: 0
 ;PCODE: $00000657 VOL: 0
+; 0000 02EF                 timeLuuHoa1.minute = realTimeOut1.minute - realTimeIn1.minute;
 ;PCODE: $00000658 VOL: 0
 ;PCODE: $00000659 VOL: 0
 ;PCODE: $0000065A VOL: 0
 ;PCODE: $0000065B VOL: 0
 ;PCODE: $0000065C VOL: 0
-; 0000 02EF             else
 ;PCODE: $0000065D VOL: 0
 ;PCODE: $0000065E VOL: 0
-; 0000 02F0             {
-; 0000 02F1                 timeLuuHoa1.minute = realTimeOut1.minute + 60 - realTimeIn1.minute;
+; 0000 02F0             else
 ;PCODE: $0000065F VOL: 0
 ;PCODE: $00000660 VOL: 0
+; 0000 02F1             {
+; 0000 02F2                 timeLuuHoa1.minute = realTimeOut1.minute + 60 - realTimeIn1.minute;
 ;PCODE: $00000661 VOL: 0
 ;PCODE: $00000662 VOL: 0
 ;PCODE: $00000663 VOL: 0
 ;PCODE: $00000664 VOL: 0
 ;PCODE: $00000665 VOL: 0
 ;PCODE: $00000666 VOL: 0
-; 0000 02F2                 realTimeOut1.hour = realTimeOut1.hour - 1;
 ;PCODE: $00000667 VOL: 0
 ;PCODE: $00000668 VOL: 0
+; 0000 02F3                 realTimeOut1.hour = realTimeOut1.hour - 1;
 ;PCODE: $00000669 VOL: 0
 ;PCODE: $0000066A VOL: 0
 ;PCODE: $0000066B VOL: 0
-; 0000 02F3             }
 ;PCODE: $0000066C VOL: 0
-; 0000 02F4             if (realTimeOut1.hour >= realTimeIn1.hour)
 ;PCODE: $0000066D VOL: 0
+; 0000 02F4             }
 ;PCODE: $0000066E VOL: 0
+; 0000 02F5             if (realTimeOut1.hour >= realTimeIn1.hour)
 ;PCODE: $0000066F VOL: 0
 ;PCODE: $00000670 VOL: 0
 ;PCODE: $00000671 VOL: 0
 ;PCODE: $00000672 VOL: 0
-; 0000 02F5                 timeLuuHoa1.hour = realTimeOut1.hour - realTimeIn1.hour;
 ;PCODE: $00000673 VOL: 0
 ;PCODE: $00000674 VOL: 0
+; 0000 02F6                 timeLuuHoa1.hour = realTimeOut1.hour - realTimeIn1.hour;
 ;PCODE: $00000675 VOL: 0
 ;PCODE: $00000676 VOL: 0
 ;PCODE: $00000677 VOL: 0
 ;PCODE: $00000678 VOL: 0
 ;PCODE: $00000679 VOL: 0
-; 0000 02F6             else
 ;PCODE: $0000067A VOL: 0
 ;PCODE: $0000067B VOL: 0
-; 0000 02F7             {
-; 0000 02F8                 timeLuuHoa1.hour = realTimeOut1.hour + 24 - realTimeIn1.hour;
+; 0000 02F7             else
 ;PCODE: $0000067C VOL: 0
 ;PCODE: $0000067D VOL: 0
+; 0000 02F8             {
+; 0000 02F9                 timeLuuHoa1.hour = realTimeOut1.hour + 24 - realTimeIn1.hour;
 ;PCODE: $0000067E VOL: 0
 ;PCODE: $0000067F VOL: 0
 ;PCODE: $00000680 VOL: 0
 ;PCODE: $00000681 VOL: 0
 ;PCODE: $00000682 VOL: 0
 ;PCODE: $00000683 VOL: 0
-; 0000 02F9                 realTimeOut1.day = realTimeOut1.day - 1;
 ;PCODE: $00000684 VOL: 0
 ;PCODE: $00000685 VOL: 0
+; 0000 02FA                 realTimeOut1.day = realTimeOut1.day - 1;
 ;PCODE: $00000686 VOL: 0
 ;PCODE: $00000687 VOL: 0
 ;PCODE: $00000688 VOL: 0
-; 0000 02FA             }
 ;PCODE: $00000689 VOL: 0
-; 0000 02FB 
-; 0000 02FC //            DE = 1;
-; 0000 02FD //            printf("Time Luu Hoa may 1: %02u:%02u:%02u\r\n",
-; 0000 02FE //                timeLuuHoa1.hour, timeLuuHoa1.minute, timeLuuHoa1.second);
-; 0000 02FF //            DE = 0;
-; 0000 0300 
-; 0000 0301             read_ds3231_datetime(&realTimeOut1);    //may 1  //doc lan 2 luu lai gia tri time out
 ;PCODE: $0000068A VOL: 0
+; 0000 02FB             }
 ;PCODE: $0000068B VOL: 0
-; 0000 0302 
-; 0000 0303 
-; 0000 0304 //            dataTrans(MAY1);
-; 0000 0305             chuTrinhMay1 = OFF;
+; 0000 02FC 
+; 0000 02FD //            DE = 1;
+; 0000 02FE //            printf("Time Luu Hoa may 1: %02u:%02u:%02u\r\n",
+; 0000 02FF //                timeLuuHoa1.hour, timeLuuHoa1.minute, timeLuuHoa1.second);
+; 0000 0300 //            DE = 0;
+; 0000 0301 
+; 0000 0302             read_ds3231_datetime(&realTimeOut1);    //may 1  //doc lan 2 luu lai gia tri time out
 ;PCODE: $0000068C VOL: 0
 ;PCODE: $0000068D VOL: 0
-; 0000 0306             timeSetOn1 = timeSet;
+; 0000 0303 
+; 0000 0304 
+; 0000 0305 //            dataTrans(MAY1);
+; 0000 0306             chuTrinhMay1 = OFF;
 ;PCODE: $0000068E VOL: 0
 ;PCODE: $0000068F VOL: 0
-; 0000 0307             delay_ms(100);
+; 0000 0307             timeSetOn1 = timeSet;
 ;PCODE: $00000690 VOL: 0
 ;PCODE: $00000691 VOL: 0
+; 0000 0308             delay_ms(100);
 ;PCODE: $00000692 VOL: 0
-; 0000 0308             dataTrans(MAY1);
 ;PCODE: $00000693 VOL: 0
 ;PCODE: $00000694 VOL: 0
-; 0000 0309         }
-; 0000 030A         //========================================================
-; 0000 030B 
-; 0000 030C         //========================================================
-; 0000 030D         //GHI THOI GIAN IN OUT SENSSOR 2
-; 0000 030E //        if(IN3 == OFF && chuTrinhMay2 == OFF && timeSetOn2 == 0)
-; 0000 030F         if(IN4 == ON && chuTrinhMay2 == OFF && timeSetOn2 == 0)
+; 0000 0309             dataTrans(MAY1);
 ;PCODE: $00000695 VOL: 0
 ;PCODE: $00000696 VOL: 0
+; 0000 030A         }
+; 0000 030B         //========================================================
+; 0000 030C 
+; 0000 030D         //========================================================
+; 0000 030E         //GHI THOI GIAN IN OUT SENSSOR 2
+; 0000 030F //        if(IN3 == OFF && chuTrinhMay2 == OFF && timeSetOn2 == 0)
+; 0000 0310         if(IN4 == ON && chuTrinhMay2 == OFF && timeSetOn2 == 0)
 ;PCODE: $00000697 VOL: 0
 ;PCODE: $00000698 VOL: 0
 ;PCODE: $00000699 VOL: 0
@@ -2524,21 +2525,21 @@
 ;PCODE: $000006A0 VOL: 0
 ;PCODE: $000006A1 VOL: 0
 ;PCODE: $000006A2 VOL: 0
-; 0000 0310         {
-; 0000 0311             chuTrinhMay2 = ON;
 ;PCODE: $000006A3 VOL: 0
 ;PCODE: $000006A4 VOL: 0
-; 0000 0312             demIN4 = 0;      //khoi tao dem so lan kich sensor out
+; 0000 0311         {
+; 0000 0312             chuTrinhMay2 = ON;
 ;PCODE: $000006A5 VOL: 0
 ;PCODE: $000006A6 VOL: 0
-; 0000 0313             read_ds3231_datetime(&realTimeIn2);     //may 2  // doc lan 1 tinh time thao tac
+; 0000 0313             demIN4 = 0;      //khoi tao dem so lan kich sensor out
 ;PCODE: $000006A7 VOL: 0
 ;PCODE: $000006A8 VOL: 0
-; 0000 0314 
-; 0000 0315             //tinh time thao tac tu lan ra truoc toi lan vao tiep theo
-; 0000 0316             if ((realTimeOut2.hour || realTimeOut2.minute || realTimeOut2.second) != 0)
+; 0000 0314             read_ds3231_datetime(&realTimeIn2);     //may 2  // doc lan 1 tinh time thao tac
 ;PCODE: $000006A9 VOL: 0
 ;PCODE: $000006AA VOL: 0
+; 0000 0315 
+; 0000 0316             //tinh time thao tac tu lan ra truoc toi lan vao tiep theo
+; 0000 0317             if ((realTimeOut2.hour || realTimeOut2.minute || realTimeOut2.second) != 0)
 ;PCODE: $000006AB VOL: 0
 ;PCODE: $000006AC VOL: 0
 ;PCODE: $000006AD VOL: 0
@@ -2550,134 +2551,134 @@
 ;PCODE: $000006B3 VOL: 0
 ;PCODE: $000006B4 VOL: 0
 ;PCODE: $000006B5 VOL: 0
-; 0000 0317             {
-; 0000 0318                 if (realTimeIn2.second >= realTimeOut2.second)
 ;PCODE: $000006B6 VOL: 0
 ;PCODE: $000006B7 VOL: 0
+; 0000 0318             {
+; 0000 0319                 if (realTimeIn2.second >= realTimeOut2.second)
 ;PCODE: $000006B8 VOL: 0
 ;PCODE: $000006B9 VOL: 0
-; 0000 0319                     timeThaoTac2.second = realTimeIn2.second - realTimeOut2.second;
 ;PCODE: $000006BA VOL: 0
 ;PCODE: $000006BB VOL: 0
+; 0000 031A                     timeThaoTac2.second = realTimeIn2.second - realTimeOut2.second;
 ;PCODE: $000006BC VOL: 0
 ;PCODE: $000006BD VOL: 0
-; 0000 031A                 else
 ;PCODE: $000006BE VOL: 0
 ;PCODE: $000006BF VOL: 0
-; 0000 031B                 {
-; 0000 031C                     timeThaoTac2.second = realTimeIn2.second + 60 - realTimeOut2.second;
+; 0000 031B                 else
 ;PCODE: $000006C0 VOL: 0
 ;PCODE: $000006C1 VOL: 0
+; 0000 031C                 {
+; 0000 031D                     timeThaoTac2.second = realTimeIn2.second + 60 - realTimeOut2.second;
 ;PCODE: $000006C2 VOL: 0
 ;PCODE: $000006C3 VOL: 0
 ;PCODE: $000006C4 VOL: 0
-; 0000 031D                     realTimeIn2.minute = realTimeIn2.minute - 1;
 ;PCODE: $000006C5 VOL: 0
 ;PCODE: $000006C6 VOL: 0
+; 0000 031E                     realTimeIn2.minute = realTimeIn2.minute - 1;
 ;PCODE: $000006C7 VOL: 0
 ;PCODE: $000006C8 VOL: 0
 ;PCODE: $000006C9 VOL: 0
-; 0000 031E                 }
 ;PCODE: $000006CA VOL: 0
-; 0000 031F                 if (realTimeIn2.minute >= realTimeOut2.minute)
 ;PCODE: $000006CB VOL: 0
+; 0000 031F                 }
 ;PCODE: $000006CC VOL: 0
+; 0000 0320                 if (realTimeIn2.minute >= realTimeOut2.minute)
 ;PCODE: $000006CD VOL: 0
 ;PCODE: $000006CE VOL: 0
 ;PCODE: $000006CF VOL: 0
 ;PCODE: $000006D0 VOL: 0
-; 0000 0320                     timeThaoTac2.minute = realTimeIn2.minute - realTimeOut2.minute;
 ;PCODE: $000006D1 VOL: 0
 ;PCODE: $000006D2 VOL: 0
+; 0000 0321                     timeThaoTac2.minute = realTimeIn2.minute - realTimeOut2.minute;
 ;PCODE: $000006D3 VOL: 0
 ;PCODE: $000006D4 VOL: 0
 ;PCODE: $000006D5 VOL: 0
 ;PCODE: $000006D6 VOL: 0
 ;PCODE: $000006D7 VOL: 0
-; 0000 0321                 else
 ;PCODE: $000006D8 VOL: 0
 ;PCODE: $000006D9 VOL: 0
-; 0000 0322                 {
-; 0000 0323                     timeThaoTac2.minute = realTimeIn2.minute + 60 - realTimeOut2.minute;
+; 0000 0322                 else
 ;PCODE: $000006DA VOL: 0
 ;PCODE: $000006DB VOL: 0
+; 0000 0323                 {
+; 0000 0324                     timeThaoTac2.minute = realTimeIn2.minute + 60 - realTimeOut2.minute;
 ;PCODE: $000006DC VOL: 0
 ;PCODE: $000006DD VOL: 0
 ;PCODE: $000006DE VOL: 0
 ;PCODE: $000006DF VOL: 0
 ;PCODE: $000006E0 VOL: 0
 ;PCODE: $000006E1 VOL: 0
-; 0000 0324                     realTimeIn2.hour = realTimeIn2.hour - 1;
 ;PCODE: $000006E2 VOL: 0
 ;PCODE: $000006E3 VOL: 0
+; 0000 0325                     realTimeIn2.hour = realTimeIn2.hour - 1;
 ;PCODE: $000006E4 VOL: 0
 ;PCODE: $000006E5 VOL: 0
 ;PCODE: $000006E6 VOL: 0
-; 0000 0325                 }
 ;PCODE: $000006E7 VOL: 0
-; 0000 0326                 if (realTimeIn2.hour >= realTimeOut2.hour)
 ;PCODE: $000006E8 VOL: 0
+; 0000 0326                 }
 ;PCODE: $000006E9 VOL: 0
+; 0000 0327                 if (realTimeIn2.hour >= realTimeOut2.hour)
 ;PCODE: $000006EA VOL: 0
 ;PCODE: $000006EB VOL: 0
 ;PCODE: $000006EC VOL: 0
 ;PCODE: $000006ED VOL: 0
-; 0000 0327                     timeThaoTac2.hour = realTimeIn2.hour - realTimeOut2.hour;
 ;PCODE: $000006EE VOL: 0
 ;PCODE: $000006EF VOL: 0
+; 0000 0328                     timeThaoTac2.hour = realTimeIn2.hour - realTimeOut2.hour;
 ;PCODE: $000006F0 VOL: 0
 ;PCODE: $000006F1 VOL: 0
 ;PCODE: $000006F2 VOL: 0
 ;PCODE: $000006F3 VOL: 0
 ;PCODE: $000006F4 VOL: 0
-; 0000 0328                 else
 ;PCODE: $000006F5 VOL: 0
 ;PCODE: $000006F6 VOL: 0
-; 0000 0329                 {
-; 0000 032A                     timeThaoTac2.hour = realTimeIn2.hour + 24 - realTimeOut2.hour;
+; 0000 0329                 else
 ;PCODE: $000006F7 VOL: 0
 ;PCODE: $000006F8 VOL: 0
+; 0000 032A                 {
+; 0000 032B                     timeThaoTac2.hour = realTimeIn2.hour + 24 - realTimeOut2.hour;
 ;PCODE: $000006F9 VOL: 0
 ;PCODE: $000006FA VOL: 0
 ;PCODE: $000006FB VOL: 0
 ;PCODE: $000006FC VOL: 0
 ;PCODE: $000006FD VOL: 0
 ;PCODE: $000006FE VOL: 0
-; 0000 032B                     realTimeIn2.day = realTimeIn2.day - 1;
 ;PCODE: $000006FF VOL: 0
 ;PCODE: $00000700 VOL: 0
+; 0000 032C                     realTimeIn2.day = realTimeIn2.day - 1;
 ;PCODE: $00000701 VOL: 0
 ;PCODE: $00000702 VOL: 0
 ;PCODE: $00000703 VOL: 0
-; 0000 032C                 }
 ;PCODE: $00000704 VOL: 0
-; 0000 032D 
-; 0000 032E //                DE = 1;
-; 0000 032F //                printf("Time thao tac may 2: %02u:%02u:%02u\r\n",
-; 0000 0330 //                    timeThaoTac2.hour, timeThaoTac2.minute, timeThaoTac2.second);
-; 0000 0331 //                DE = 0;
-; 0000 0332             }
-; 0000 0333             read_ds3231_datetime(&realTimeIn2);     //may 2   //doc lan 2 de luu lai gia tri vao
 ;PCODE: $00000705 VOL: 0
+; 0000 032D                 }
 ;PCODE: $00000706 VOL: 0
+; 0000 032E 
+; 0000 032F //                DE = 1;
+; 0000 0330 //                printf("Time thao tac may 2: %02u:%02u:%02u\r\n",
+; 0000 0331 //                    timeThaoTac2.hour, timeThaoTac2.minute, timeThaoTac2.second);
+; 0000 0332 //                DE = 0;
+; 0000 0333             }
+; 0000 0334             read_ds3231_datetime(&realTimeIn2);     //may 2   //doc lan 2 de luu lai gia tri vao
 ;PCODE: $00000707 VOL: 0
-; 0000 0334 //            DE = 1;
-; 0000 0335 //            printf("Time lieu vao may 2: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
-; 0000 0336 //                realTimeIn2.hour, realTimeIn2.minute, realTimeIn2.second,
-; 0000 0337 //                realTimeIn2.date, realTimeIn2.month, realTimeIn2.year);
-; 0000 0338 //            DE = 0;
-; 0000 0339 
-; 0000 033A //            chuTrinhMay2 = ON;
-; 0000 033B             timeSetOn2 = timeSet;
 ;PCODE: $00000708 VOL: 0
 ;PCODE: $00000709 VOL: 0
-; 0000 033C //            delay_ms(200);
-; 0000 033D         }
-; 0000 033E 
-; 0000 033F //        if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0)
-; 0000 0340         if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0 && demIN4 == 0)      //IN4  0->1: lieu ra        //demIN2 ...
+; 0000 0335 //            DE = 1;
+; 0000 0336 //            printf("Time lieu vao may 2: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+; 0000 0337 //                realTimeIn2.hour, realTimeIn2.minute, realTimeIn2.second,
+; 0000 0338 //                realTimeIn2.date, realTimeIn2.month, realTimeIn2.year);
+; 0000 0339 //            DE = 0;
+; 0000 033A 
+; 0000 033B //            chuTrinhMay2 = ON;
+; 0000 033C             timeSetOn2 = timeSet;
 ;PCODE: $0000070A VOL: 0
 ;PCODE: $0000070B VOL: 0
+; 0000 033D //            delay_ms(200);
+; 0000 033E         }
+; 0000 033F 
+; 0000 0340 //        if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0)
+; 0000 0341         if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0 && demIN4 == 0)      //IN4  0->1: lieu ra        //demIN2 ...
 ;PCODE: $0000070C VOL: 0
 ;PCODE: $0000070D VOL: 0
 ;PCODE: $0000070E VOL: 0
@@ -2693,17 +2694,18 @@
 ;PCODE: $00000718 VOL: 0
 ;PCODE: $00000719 VOL: 0
 ;PCODE: $0000071A VOL: 0
-; 0000 0341         {
-; 0000 0342             demIN4 = 1;
 ;PCODE: $0000071B VOL: 0
 ;PCODE: $0000071C VOL: 0
-; 0000 0343         }
-; 0000 0344 
-; 0000 0345         if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0 && demIN4 == 1)     //IN4  0->1: lieu ra        //demIN2  ...
+; 0000 0342         {
+; 0000 0343             demIN4 = 1;
 ;PCODE: $0000071D VOL: 0
 ;PCODE: $0000071E VOL: 0
+; 0000 0344             timeSetOn2 = timeSet;
 ;PCODE: $0000071F VOL: 0
 ;PCODE: $00000720 VOL: 0
+; 0000 0345         }
+; 0000 0346 
+; 0000 0347         if(IN4 == OFF && chuTrinhMay2 == ON && timeSetOn2 == 0 && demIN4 == 1)     //IN4  0->1: lieu ra        //demIN2  ...
 ;PCODE: $00000721 VOL: 0
 ;PCODE: $00000722 VOL: 0
 ;PCODE: $00000723 VOL: 0
@@ -2717,186 +2719,190 @@
 ;PCODE: $0000072B VOL: 0
 ;PCODE: $0000072C VOL: 0
 ;PCODE: $0000072D VOL: 0
-; 0000 0346         {
-; 0000 0347             demIN4 = 2;
 ;PCODE: $0000072E VOL: 0
 ;PCODE: $0000072F VOL: 0
-; 0000 0348             timeThaoTac2.hour   = 0;
 ;PCODE: $00000730 VOL: 0
 ;PCODE: $00000731 VOL: 0
+; 0000 0348         {
+; 0000 0349             demIN4 = 2;
 ;PCODE: $00000732 VOL: 0
-; 0000 0349             timeThaoTac2.minute = 0;
 ;PCODE: $00000733 VOL: 0
+; 0000 034A             timeThaoTac2.hour   = 0;
 ;PCODE: $00000734 VOL: 0
 ;PCODE: $00000735 VOL: 0
-; 0000 034A             timeThaoTac2.second = 0;
 ;PCODE: $00000736 VOL: 0
+; 0000 034B             timeThaoTac2.minute = 0;
 ;PCODE: $00000737 VOL: 0
-; 0000 034B 
-; 0000 034C             read_ds3231_datetime(&realTimeOut2);    //may 2     // doc lan 1 tinh time thao tac
 ;PCODE: $00000738 VOL: 0
 ;PCODE: $00000739 VOL: 0
-; 0000 034D //            DE = 1;
-; 0000 034E //            printf("Time lieu ra may 2: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
-; 0000 034F //                realTimeOut2.hour, realTimeOut2.minute, realTimeOut2.second,
-; 0000 0350 //                realTimeOut2.date, realTimeOut2.month, realTimeOut2.year);
-; 0000 0351 //            DE = 0;
-; 0000 0352 
-; 0000 0353 
-; 0000 0354             //tinh time luu hoa may 2
-; 0000 0355             timeLuuHoa2.hour = realTimeOut2.hour - realTimeIn2.hour;
+; 0000 034C             timeThaoTac2.second = 0;
 ;PCODE: $0000073A VOL: 0
 ;PCODE: $0000073B VOL: 0
+; 0000 034D 
+; 0000 034E             read_ds3231_datetime(&realTimeOut2);    //may 2     // doc lan 1 tinh time thao tac
 ;PCODE: $0000073C VOL: 0
 ;PCODE: $0000073D VOL: 0
+; 0000 034F //            DE = 1;
+; 0000 0350 //            printf("Time lieu ra may 2: %02u:%02u:%02u Date: %02u/%02u/20%02u\r\n",
+; 0000 0351 //                realTimeOut2.hour, realTimeOut2.minute, realTimeOut2.second,
+; 0000 0352 //                realTimeOut2.date, realTimeOut2.month, realTimeOut2.year);
+; 0000 0353 //            DE = 0;
+; 0000 0354 
+; 0000 0355 
+; 0000 0356             //tinh time luu hoa may 2
+; 0000 0357             timeLuuHoa2.hour = realTimeOut2.hour - realTimeIn2.hour;
 ;PCODE: $0000073E VOL: 0
 ;PCODE: $0000073F VOL: 0
 ;PCODE: $00000740 VOL: 0
-; 0000 0356             timeLuuHoa2.minute = realTimeOut2.minute - realTimeIn2.minute;
 ;PCODE: $00000741 VOL: 0
 ;PCODE: $00000742 VOL: 0
 ;PCODE: $00000743 VOL: 0
 ;PCODE: $00000744 VOL: 0
+; 0000 0358             timeLuuHoa2.minute = realTimeOut2.minute - realTimeIn2.minute;
 ;PCODE: $00000745 VOL: 0
 ;PCODE: $00000746 VOL: 0
 ;PCODE: $00000747 VOL: 0
-; 0000 0357             timeLuuHoa2.second = realTimeOut2.second - realTimeIn2.second;
 ;PCODE: $00000748 VOL: 0
 ;PCODE: $00000749 VOL: 0
 ;PCODE: $0000074A VOL: 0
 ;PCODE: $0000074B VOL: 0
-; 0000 0358 
-; 0000 0359             if (realTimeOut2.second >= realTimeIn2.second)
+; 0000 0359             timeLuuHoa2.second = realTimeOut2.second - realTimeIn2.second;
 ;PCODE: $0000074C VOL: 0
 ;PCODE: $0000074D VOL: 0
 ;PCODE: $0000074E VOL: 0
 ;PCODE: $0000074F VOL: 0
-; 0000 035A                 timeLuuHoa2.second = realTimeOut2.second - realTimeIn2.second;
+; 0000 035A 
+; 0000 035B             if (realTimeOut2.second >= realTimeIn2.second)
 ;PCODE: $00000750 VOL: 0
 ;PCODE: $00000751 VOL: 0
 ;PCODE: $00000752 VOL: 0
 ;PCODE: $00000753 VOL: 0
-; 0000 035B             else
+; 0000 035C                 timeLuuHoa2.second = realTimeOut2.second - realTimeIn2.second;
 ;PCODE: $00000754 VOL: 0
 ;PCODE: $00000755 VOL: 0
-; 0000 035C             {
-; 0000 035D                 timeLuuHoa2.second = realTimeOut2.second + 60 - realTimeIn2.second;
 ;PCODE: $00000756 VOL: 0
 ;PCODE: $00000757 VOL: 0
+; 0000 035D             else
 ;PCODE: $00000758 VOL: 0
 ;PCODE: $00000759 VOL: 0
+; 0000 035E             {
+; 0000 035F                 timeLuuHoa2.second = realTimeOut2.second + 60 - realTimeIn2.second;
 ;PCODE: $0000075A VOL: 0
-; 0000 035E                 realTimeOut2.minute = realTimeOut2.minute - 1;
 ;PCODE: $0000075B VOL: 0
 ;PCODE: $0000075C VOL: 0
 ;PCODE: $0000075D VOL: 0
 ;PCODE: $0000075E VOL: 0
+; 0000 0360                 realTimeOut2.minute = realTimeOut2.minute - 1;
 ;PCODE: $0000075F VOL: 0
-; 0000 035F             }
 ;PCODE: $00000760 VOL: 0
-; 0000 0360             if (realTimeOut2.minute >= realTimeIn2.minute)
 ;PCODE: $00000761 VOL: 0
 ;PCODE: $00000762 VOL: 0
 ;PCODE: $00000763 VOL: 0
+; 0000 0361             }
 ;PCODE: $00000764 VOL: 0
+; 0000 0362             if (realTimeOut2.minute >= realTimeIn2.minute)
 ;PCODE: $00000765 VOL: 0
 ;PCODE: $00000766 VOL: 0
-; 0000 0361                 timeLuuHoa2.minute = realTimeOut2.minute - realTimeIn2.minute;
 ;PCODE: $00000767 VOL: 0
 ;PCODE: $00000768 VOL: 0
 ;PCODE: $00000769 VOL: 0
 ;PCODE: $0000076A VOL: 0
+; 0000 0363                 timeLuuHoa2.minute = realTimeOut2.minute - realTimeIn2.minute;
 ;PCODE: $0000076B VOL: 0
 ;PCODE: $0000076C VOL: 0
 ;PCODE: $0000076D VOL: 0
-; 0000 0362             else
 ;PCODE: $0000076E VOL: 0
 ;PCODE: $0000076F VOL: 0
-; 0000 0363             {
-; 0000 0364                 timeLuuHoa2.minute = realTimeOut2.minute + 60 - realTimeIn2.minute;
 ;PCODE: $00000770 VOL: 0
 ;PCODE: $00000771 VOL: 0
+; 0000 0364             else
 ;PCODE: $00000772 VOL: 0
 ;PCODE: $00000773 VOL: 0
+; 0000 0365             {
+; 0000 0366                 timeLuuHoa2.minute = realTimeOut2.minute + 60 - realTimeIn2.minute;
 ;PCODE: $00000774 VOL: 0
 ;PCODE: $00000775 VOL: 0
 ;PCODE: $00000776 VOL: 0
 ;PCODE: $00000777 VOL: 0
-; 0000 0365                 realTimeOut2.hour = realTimeOut2.hour - 1;
 ;PCODE: $00000778 VOL: 0
 ;PCODE: $00000779 VOL: 0
 ;PCODE: $0000077A VOL: 0
 ;PCODE: $0000077B VOL: 0
+; 0000 0367                 realTimeOut2.hour = realTimeOut2.hour - 1;
 ;PCODE: $0000077C VOL: 0
-; 0000 0366             }
 ;PCODE: $0000077D VOL: 0
-; 0000 0367             if (realTimeOut2.hour >= realTimeIn2.hour)
 ;PCODE: $0000077E VOL: 0
 ;PCODE: $0000077F VOL: 0
 ;PCODE: $00000780 VOL: 0
+; 0000 0368             }
 ;PCODE: $00000781 VOL: 0
+; 0000 0369             if (realTimeOut2.hour >= realTimeIn2.hour)
 ;PCODE: $00000782 VOL: 0
 ;PCODE: $00000783 VOL: 0
-; 0000 0368                 timeLuuHoa2.hour = realTimeOut2.hour - realTimeIn2.hour;
 ;PCODE: $00000784 VOL: 0
 ;PCODE: $00000785 VOL: 0
 ;PCODE: $00000786 VOL: 0
 ;PCODE: $00000787 VOL: 0
+; 0000 036A                 timeLuuHoa2.hour = realTimeOut2.hour - realTimeIn2.hour;
 ;PCODE: $00000788 VOL: 0
 ;PCODE: $00000789 VOL: 0
 ;PCODE: $0000078A VOL: 0
-; 0000 0369             else
 ;PCODE: $0000078B VOL: 0
 ;PCODE: $0000078C VOL: 0
-; 0000 036A             {
-; 0000 036B                 timeLuuHoa2.hour = realTimeOut2.hour + 24 - realTimeIn2.hour;
 ;PCODE: $0000078D VOL: 0
 ;PCODE: $0000078E VOL: 0
+; 0000 036B             else
 ;PCODE: $0000078F VOL: 0
 ;PCODE: $00000790 VOL: 0
+; 0000 036C             {
+; 0000 036D                 timeLuuHoa2.hour = realTimeOut2.hour + 24 - realTimeIn2.hour;
 ;PCODE: $00000791 VOL: 0
 ;PCODE: $00000792 VOL: 0
 ;PCODE: $00000793 VOL: 0
 ;PCODE: $00000794 VOL: 0
-; 0000 036C                 realTimeOut2.day = realTimeOut2.day - 1;
 ;PCODE: $00000795 VOL: 0
 ;PCODE: $00000796 VOL: 0
 ;PCODE: $00000797 VOL: 0
 ;PCODE: $00000798 VOL: 0
+; 0000 036E                 realTimeOut2.day = realTimeOut2.day - 1;
 ;PCODE: $00000799 VOL: 0
-; 0000 036D             }
 ;PCODE: $0000079A VOL: 0
-; 0000 036E 
-; 0000 036F //            DE = 1;
-; 0000 0370 //            printf("Time Luu Hoa may 2: %02u:%02u:%02u\r\n",
-; 0000 0371 //                timeLuuHoa2.hour, timeLuuHoa2.minute, timeLuuHoa2.second);
-; 0000 0372 //            DE = 0;
-; 0000 0373 
-; 0000 0374             read_ds3231_datetime(&realTimeOut2);    //may 2  //doc lan 2 luu lai gia tri time out
 ;PCODE: $0000079B VOL: 0
 ;PCODE: $0000079C VOL: 0
-; 0000 0375 
-; 0000 0376 //            dataTrans(MAY2);
-; 0000 0377             chuTrinhMay2 = OFF;
 ;PCODE: $0000079D VOL: 0
+; 0000 036F             }
 ;PCODE: $0000079E VOL: 0
-; 0000 0378             timeSetOn2 = timeSet;
+; 0000 0370 
+; 0000 0371 //            DE = 1;
+; 0000 0372 //            printf("Time Luu Hoa may 2: %02u:%02u:%02u\r\n",
+; 0000 0373 //                timeLuuHoa2.hour, timeLuuHoa2.minute, timeLuuHoa2.second);
+; 0000 0374 //            DE = 0;
+; 0000 0375 
+; 0000 0376             read_ds3231_datetime(&realTimeOut2);    //may 2  //doc lan 2 luu lai gia tri time out
 ;PCODE: $0000079F VOL: 0
 ;PCODE: $000007A0 VOL: 0
-; 0000 0379             delay_ms(100);
+; 0000 0377 
+; 0000 0378 //            dataTrans(MAY2);
+; 0000 0379             chuTrinhMay2 = OFF;
 ;PCODE: $000007A1 VOL: 0
 ;PCODE: $000007A2 VOL: 0
+; 0000 037A             timeSetOn2 = timeSet;
 ;PCODE: $000007A3 VOL: 0
-; 0000 037A             dataTrans(MAY2);
 ;PCODE: $000007A4 VOL: 0
+; 0000 037B             delay_ms(100);
 ;PCODE: $000007A5 VOL: 0
-; 0000 037B         }
-; 0000 037C         //========================================================
-; 0000 037D     }
 ;PCODE: $000007A6 VOL: 0
 ;PCODE: $000007A7 VOL: 0
+; 0000 037C             dataTrans(MAY2);
 ;PCODE: $000007A8 VOL: 0
-; 0000 037E }
 ;PCODE: $000007A9 VOL: 0
+; 0000 037D         }
+; 0000 037E         //========================================================
+; 0000 037F     }
 ;PCODE: $000007AA VOL: 0
 ;PCODE: $000007AB VOL: 0
+;PCODE: $000007AC VOL: 0
+; 0000 0380 }
+;PCODE: $000007AD VOL: 0
+;PCODE: $000007AE VOL: 0
+;PCODE: $000007AF VOL: 0

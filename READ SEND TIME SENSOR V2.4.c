@@ -6,7 +6,7 @@ Automatic Program Generator
 http://www.hpinfotech.com
 
 Project : READ SEND TIME SENSOR
-Version : V2.4. chinh  tiep tu v2.2, chinh 5s->2s, 1 INput cho senssor out  , IN2 1->0: lieu vao    IN2  0->1: lieu ra
+Version : V2.4. chinh  tiep tu v2.2, chinh 5s->2s, 1 INput cho senssor out  , IN2 1->0: lieu vao    IN2  0->1: lieu ra     fix cung ID, baudrate update 18/10/2025
 Date    : 18-Jul-2025
 Author  : Nguyen Van Anh
 Company : VART
@@ -571,18 +571,48 @@ unsigned char epprom_read(unsigned int add)
     return EEDR; 
 } 
 
-void setting()
+//void setting()
+//{
+//    if (epprom_read(0x010) != 1)
+//    {
+//        epprom_write(addr_baudrate,0x01); //1            //khoi tao khi nap code co baudrate 9600     
+//        epprom_write(addr_diaChiSlave,0x01);          //khoi tao khi nap code chon dia chi slave la 01
+//        epprom_write(0x010,1); //sau khi luu gia tri default cho cac thong so thi set len 1 de sau ko ghi nua 
+//        set_ds3231_datetime(&set_time);     //set realtime 1 lan khi nap code
+//    } 
+//     
+//    mode_baudrate        = epprom_read(addr_baudrate);     
+//    diaChiSlave     = epprom_read(addr_diaChiSlave); 
+//    
+//    if      (mode_baudrate == 1)
+//        UBRR0L = 71;     // THACH ANH 11.0592Mhz  71  9600  baud
+//    else if (mode_baudrate == 2) 
+//        UBRR0L = 47;     // THACH ANH 11.0592Mhz  47  14400 baud
+//    else if (mode_baudrate == 3) 
+//        UBRR0L = 35;     // THACH ANH 11.0592Mhz  35  19200 baud 
+//    else if (mode_baudrate == 4) 
+//        UBRR0L = 17;     // THACH ANH 11.0592Mhz  17  38400 baud  
+//        
+//    DE = 0;  
+//    timeSetOn1 = timeSet;
+//    timeSetOn2 = timeSet;
+//}
+
+void setting()  //CHUYEN QUA SET CUNG ID va Baudrate  Lô cu: 1,2,3,4,5,8,9,10,12,14; Lô mOi: 6,7,11,13,15,16,17,18,19,20,21,22,23,24,25,26, 27(du phòng).
+
 {
     if (epprom_read(0x010) != 1)
     {
-        epprom_write(addr_baudrate,0x01); //1            //khoi tao khi nap code co baudrate 9600     
-        epprom_write(addr_diaChiSlave,0x01);          //khoi tao khi nap code chon dia chi slave la 01
+//        epprom_write(addr_baudrate,0x01); //1            //khoi tao khi nap code co baudrate 9600     
+//        epprom_write(addr_diaChiSlave,0x01);          //khoi tao khi nap code chon dia chi slave la 01
         epprom_write(0x010,1); //sau khi luu gia tri default cho cac thong so thi set len 1 de sau ko ghi nua 
         set_ds3231_datetime(&set_time);     //set realtime 1 lan khi nap code
     } 
      
-    mode_baudrate        = epprom_read(addr_baudrate);     
-    diaChiSlave     = epprom_read(addr_diaChiSlave); 
+//    mode_baudrate        = epprom_read(addr_baudrate);     
+//    diaChiSlave     = epprom_read(addr_diaChiSlave);  
+    mode_baudrate   = 1;     
+    diaChiSlave     = 14;   //fix theo ID
     
     if      (mode_baudrate == 1)
         UBRR0L = 71;     // THACH ANH 11.0592Mhz  71  9600  baud
@@ -625,9 +655,26 @@ void main(void)
         //========================================================  
         */  
         
-        if (F_rx == 10)
+//        if (F_rx == 10)
+//        {   
+//            diaChiSlave     =   buff_rx[8];
+//            set_time.hour   =   buff_rx[10];
+//            set_time.minute =   buff_rx[12];
+//            set_time.second =   buff_rx[14];
+//            set_time.date   =   buff_rx[16];
+//            set_time.month  =   buff_rx[18];
+//            set_time.year   =   buff_rx[20]; 
+//            set_ds3231_datetime(&set_time); 
+//            delay_ms(100);
+//            transModbusRTU_setup(); 
+//            F_rx = 0; 
+////            send("ghi suscess");
+//            epprom_write(addr_diaChiSlave,diaChiSlave);
+//        }
+
+        if (F_rx == 10)    ////CHUYEN QUA SET CUNG ID va Baudrate  Lô cu: 1,2,3,4,5,8,9,10,12,14; Lô mOi: 6,7,11,13,15,16,17,18,19,20,21,22,23,24,25,26, 27(du phòng).
         {   
-            diaChiSlave     =   buff_rx[8];
+//            diaChiSlave     =   buff_rx[8];    //fix cung
             set_time.hour   =   buff_rx[10];
             set_time.minute =   buff_rx[12];
             set_time.second =   buff_rx[14];
@@ -636,10 +683,10 @@ void main(void)
             set_time.year   =   buff_rx[20]; 
             set_ds3231_datetime(&set_time); 
             delay_ms(100);
-            transModbusRTU_setup(); 
+            transModbusRTU_setup();     //van gui ID chinh xac cua sp len PC SAU FIX CUNG
             F_rx = 0; 
 //            send("ghi suscess");
-            epprom_write(addr_diaChiSlave,diaChiSlave);
+//            epprom_write(addr_diaChiSlave,diaChiSlave);   //comment fix de fix cung ID
         }
         
         else if (F_rx == 3)
